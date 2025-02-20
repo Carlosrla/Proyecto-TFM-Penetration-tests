@@ -2,6 +2,15 @@ import subprocess
 import json
 import argparse
 import xml.etree.ElementTree as ET
+import itertools
+import threading
+import time
+
+def spinner():
+    spinner_cycle = itertools.cycle(["|", "/", "-", "\\"])
+    while not stop_spinner:
+        print(f"\r[+] Escaneando la red... {next(spinner_cycle)}", end="")
+        time.sleep(0.2)  # Velocidad del spinner
 
 def parse_nmap_output(xml_output):
     root = ET.fromstring(xml_output)
@@ -51,12 +60,21 @@ def run_banner_scan(ip, ports):
         return None
 
 def run_nmap_scan(target, output_file):
+    global stop_spinner
+    stop_spinner = False
+    spinner_thread = threading.Thread(target=spinner)
+    spinner_thread.start()  # Iniciar el spinner
+
     print(f"[+] Escaneando la red: {target}")
     
     nmap_command = ["nmap", "-sV", "-p-", "-O", "--open", "--script=banner", "-oX", "-", target]
     
     try:
         nmap_output = subprocess.run(nmap_command, capture_output=True, text=True, check=True)
+        stop_spinner = True  # Detener el spinner cuando termine el escaneo
+        spinner_thread.join()
+        print("\n[+] Escaneo completado.")
+
         parsed_results = parse_nmap_output(nmap_output.stdout)
         parsed_results["target"] = target
         
@@ -66,7 +84,9 @@ def run_nmap_scan(target, output_file):
         print(f"[+] Resultados guardados en {output_file}")
     
     except subprocess.CalledProcessError as e:
-        print(f"[-] Error ejecutando Nmap: {e}")
+        stop_spinner = True  # Detener el spinner en caso de error
+        spinner_thread.join()
+        print(f"\n[-] Error ejecutando Nmap: {e}")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Módulo de Reconocimiento de Red con Nmap")
