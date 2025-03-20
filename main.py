@@ -1,13 +1,18 @@
-from api import scan_network
-import argparse
+from utils.api import PentestAPI
 
 def main():
-    parser = argparse.ArgumentParser(description="Herramienta de Pentesting - Reconocimiento")
-    parser.add_argument("--target", required=True, help="Objetivo a escanear (IP o rango)")
-    parser.add_argument("--output", default="scan_results.json", help="Archivo para resultados")
-    args = parser.parse_args()
+    target = "192.168.1.0/24"
+    output_file = "results/scan_results.json"
 
-    scan_network(args.target, args.output)
+    # Inicializar el API
+    api = PentestAPI()
+
+    # Fase 1: Reconocimiento
+    scan_results = api.scan_network(target, output_file)
+    if scan_results:
+        print("[+] Resultados del escaneo:")
+        for host in scan_results["hosts"]:
+            print(f"  - {host['ip']}: {host['open_ports']}")
 
 if __name__ == "__main__":
     main()
