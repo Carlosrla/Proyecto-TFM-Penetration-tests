@@ -1,21 +1,18 @@
 import subprocess
 import json
 import xml.etree.ElementTree as ET
-import itertools
-import threading
+from tqdm import tqdm  # Para la barra de progreso
 import time
 
 class Reconnaissance:
     def __init__(self):
         self.stop_spinner = False
-
-    def spinner(self):
-        spinner_cycle = itertools.cycle(["|", "/", "-", "\\"])
-        while not self.stop_spinner:
-            print(f"\r[+] Escaneando la red... {next(spinner_cycle)}", end="")
-            time.sleep(0.2)
+        self.CRITICAL_PORTS = "21,22,25,53,80,110,139,143,443,445,1433,2049,3306,3389,5432,5900,6379,8080"
 
     def parse_nmap_output(self, xml_output):
+        """
+        Parsea la salida XML de Nmap y la convierte en un diccionario.
+        """
         root = ET.fromstring(xml_output)
         scan_results = {"hosts": []}
         for host in root.findall(".//host"):
@@ -46,6 +43,9 @@ class Reconnaissance:
         return scan_results
 
     def run_banner_scan(self, ip, ports):
+        """
+        Ejecuta un escaneo de banners en puertos desconocidos.
+        """
         port_str = ",".join(ports)
         print(f"[+] Ejecutando escaneo adicional en puertos desconocidos: {port_str}")
         nmap_command = ["nmap", "-sV", "--script=banner", "-p", port_str, "-oX", "-", ip]
@@ -56,25 +56,44 @@ class Reconnaissance:
             print(f"[-] Error en el escaneo de banners: {e}")
             return None
 
-    def run_nmap_scan(self, target, output_file="scan_results.json"):
-        self.stop_spinner = False
-        spinner_thread = threading.Thread(target=self.spinner)
-        spinner_thread.start()
+    def run_nmap_scan(self, target, output_file="scan_results.json", scan_type="critical"):
+        """
+        Ejecuta un escaneo de Nmap con una barra de progreso.
+        :param target: IP o rango de IPs a escanear.
+        :param output_file: Ruta para guardar los resultados.
+        :param scan_type: Tipo de escaneo ("full" para todos los puertos, "critical" para puertos críticos).
+        """
         print(f"[+] Escaneando la red: {target}")
-        nmap_command = ["nmap", "-sV", "-p-", "-O", "--open", "--script=banner", "-oX", "-", target]
-        try:
-            nmap_output = subprocess.run(nmap_command, capture_output=True, text=True, check=True)
-            self.stop_spinner = True
-            spinner_thread.join()
+        
+        # Definir el comando de Nmap según el tipo de escaneo
+        if scan_type == "full":
+            nmap_command = ["nmap", "-sV", "-p-", "-O", "--open", "--script=banner", "-oX", "-", target]
+        elif scan_type == "critical":
+            nmap_command = ["nmap", "-sV", "-p", self.CRITICAL_PORTS, "-O", "--open", "--script=banner", "-oX", "-", target]
+        else:
+            print("[-] Tipo de escaneo no válido.")
+            return None
+
+        # Ejecutar Nmap en segundo plano
+        process = subprocess.Popen(nmap_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+
+        # Barra de progreso
+        with tqdm(total=100, desc="Progreso del escaneo", unit="%") as pbar:
+            while process.poll() is None:  # Mientras el proceso esté en ejecución
+                time.sleep(1)  # Actualizar la barra cada segundo
+                pbar.update(1)  # Incrementar la barra en 1%
+
+        # Obtener la salida de Nmap
+        nmap_output, _ = process.communicate()
+
+        if process.returncode == 0:
             print("\n[+] Escaneo completado.")
-            parsed_results = self.parse_nmap_output(nmap_output.stdout)
+            parsed_results = self.parse_nmap_output(nmap_output)
             parsed_results["target"] = target
             with open(output_file, "w") as json_file:
                 json.dump(parsed_results, json_file, indent=4)
             print(f"[+] Resultados guardados en {output_file}")
             return parsed_results
-        except subprocess.CalledProcessError as e:
-            self.stop_spinner = True
-            spinner_thread.join()
-            print(f"\n[-] Error ejecutando Nmap: {e}")
+        else:
+            print("\n[-] Error ejecutando Nmap.")
             return None
