@@ -78,10 +78,18 @@ class Reconnaissance:
         process = subprocess.Popen(nmap_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
         # Barra de progreso
-        with tqdm(total=100, desc="Progreso del escaneo", unit="%") as pbar:
-            while process.poll() is None:  # Mientras el proceso esté en ejecución
-                time.sleep(1)  # Actualizar la barra cada segundo
-                pbar.update(1)  # Incrementar la barra en 1%
+        if scan_type == "critical":
+            # Barra de progreso para escaneos críticos (0% a 100%)
+            with tqdm(total=100, desc="Progreso del escaneo", unit="%") as pbar:
+                while process.poll() is None:  # Mientras el proceso esté en ejecución
+                    time.sleep(1)  # Actualizar la barra cada segundo
+                    pbar.update(1)  # Incrementar la barra en 1%
+        else:
+            # Indicador de actividad para escaneos completos
+            with tqdm(desc="Escaneo en progreso", unit=" hosts") as pbar:
+                while process.poll() is None:  # Mientras el proceso esté en ejecución
+                    time.sleep(1)  # Actualizar la barra cada segundo
+                    pbar.update(0)  # Simplemente muestra que el escaneo está en progreso
 
         # Obtener la salida de Nmap
         nmap_output, _ = process.communicate()
