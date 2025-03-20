@@ -1,0 +1,6 @@
+python-nmap
+impacket
+scapy
+reportlab
+jinja2
+argparse

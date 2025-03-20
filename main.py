@@ -1,17 +1,13 @@
-from utils.config import load_config
-from utils.logger import setup_logger
-from modules.reconnaissance import scan_network
+from api import scan_network
+import argparse
 
 def main():
-    logger = setup_logger()
-    config = load_config()
+    parser = argparse.ArgumentParser(description="Herramienta de Pentesting - Reconocimiento")
+    parser.add_argument("--target", required=True, help="Objetivo a escanear (IP o rango)")
+    parser.add_argument("--output", default="scan_results.json", help="Archivo para resultados")
+    args = parser.parse_args()
 
-    ip_range = input("Introduce el rango IP a escanear (ENTER para usar por defecto): ")
-    if not ip_range:
-        ip_range = config["ip_range"]
-
-    scan_results = scan_network(ip_range, config["scan_options"])
-    logger.info(f"Resultados del escaneo: {scan_network}")
+    scan_network(args.target, args.output)
 
 if __name__ == "__main__":
     main()
