@@ -1,11 +1,15 @@
 from utils.api import PentestAPI
 from modules.reporting import generate_report
+import os
 
 def main():
     target = "192.168.1.0/24"
     output_file = "results/scan_results.json"
     exploits_file = "results/exploits.json"
     report_file = "results/report.html"
+
+    # Asegurarse de que el directorio "results" exista
+    os.makedirs("results", exist_ok=True)
 
     # Inicializar el API
     api = PentestAPI()

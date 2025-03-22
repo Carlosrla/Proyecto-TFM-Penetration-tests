@@ -47,18 +47,18 @@ class Reconnaissance:
         return scan_results
 
     def search_exploits_for_services(self, scan_results):
-        """
-        Busca exploits para los servicios y versiones detectados.
-        """
-        for host in scan_results["hosts"]:
-            print(f"[+] Buscando exploits para {host['ip']}...")
-            for port in host["open_ports"]:
-                if port["service"] != "unknown" and port["version"] != "N/A" and port["version"] is not None:
-                    print(f"  - Servicio: {port['service']} {port['version']}")
-                    search_exploits(port["service"], port["version"])
-                else:
-                    print(f"  - Servicio: {port['service']} (versión no disponible, omitiendo búsqueda de exploits)")
-
+    """
+    Busca exploits para los servicios y versiones detectados.
+    """
+    for host in scan_results["hosts"]:
+        print(f"[+] Buscando exploits para {host['ip']}...")
+        for port in host["open_ports"]:
+            if port["service"] != "unknown" and port["version"] != "N/A" and port["version"] is not None:
+                print(f"  - Servicio: {port['service']} {port['version']}")
+                search_exploits(port["service"], port["version"], "results/exploits.json")  # Ruta completa
+            else:
+                print(f"  - Servicio: {port['service']} (versión no disponible, omitiendo búsqueda de exploits)")
+    
     def run_banner_scan(self, ip, ports):
         """
         Ejecuta un escaneo de banners en puertos desconocidos.
