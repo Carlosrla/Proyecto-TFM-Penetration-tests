@@ -46,18 +46,18 @@ class Reconnaissance:
         self.search_exploits_for_services(scan_results)
         return scan_results
 
-   def search_exploits_for_services(self, scan_results):
-    """
-    Busca exploits para los servicios y versiones detectados.
-    """
-    for host in scan_results["hosts"]:
-        print(f"[+] Buscando exploits para {host['ip']}...")
-        for port in host["open_ports"]:
-            if port["service"] != "unknown" and port["version"] != "N/A" and port["version"] is not None:
-                print(f"  - Servicio: {port['service']} {port['version']}")
-                search_exploits(port["service"], port["version"])
-            else:
-                print(f"  - Servicio: {port['service']} (versión no disponible, omitiendo búsqueda de exploits)")
+    def search_exploits_for_services(self, scan_results):
+        """
+        Busca exploits para los servicios y versiones detectados.
+        """
+        for host in scan_results["hosts"]:
+            print(f"[+] Buscando exploits para {host['ip']}...")
+            for port in host["open_ports"]:
+                if port["service"] != "unknown" and port["version"] != "N/A" and port["version"] is not None:
+                    print(f"  - Servicio: {port['service']} {port['version']}")
+                    search_exploits(port["service"], port["version"])
+                else:
+                    print(f"  - Servicio: {port['service']} (versión no disponible, omitiendo búsqueda de exploits)")
 
     def run_banner_scan(self, ip, ports):
         """
@@ -105,7 +105,7 @@ class Reconnaissance:
         # Obtener la salida de Nmap
         nmap_output, _ = process.communicate()
 
-        if process.returncode == 0:
+        if process.returncode == 0 and nmap_output:  # Verificar que la salida no sea None
             print("\n[+] Escaneo completado.")
             parsed_results = self.parse_nmap_output(nmap_output)
             parsed_results["target"] = target
@@ -114,5 +114,5 @@ class Reconnaissance:
             print(f"[+] Resultados guardados en {output_file}")
             return parsed_results
         else:
-            print("\n[-] Error ejecutando Nmap.")
+            print("\n[-] Error ejecutando Nmap o salida vacía.")
             return None
