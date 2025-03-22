@@ -1,8 +1,9 @@
 import subprocess
 import json
 import xml.etree.ElementTree as ET
-from tqdm import tqdm  # Para la barra de progreso
+from tqdm import tqdm
 import time
+from modules.exploit_search import search_exploits  # Importar el módulo de búsqueda de exploits
 
 class Reconnaissance:
     def __init__(self):
@@ -40,7 +41,21 @@ class Reconnaissance:
             if unknown_ports:
                 banner_results = self.run_banner_scan(ip, unknown_ports)
                 print(f"[+] Información adicional obtenida: {banner_results}")
+        
+        # Buscar exploits para los servicios detectados
+        self.search_exploits_for_services(scan_results)
         return scan_results
+
+    def search_exploits_for_services(self, scan_results):
+        """
+        Busca exploits para los servicios y versiones detectados.
+        """
+        for host in scan_results["hosts"]:
+            print(f"[+] Buscando exploits para {host['ip']}...")
+            for port in host["open_ports"]:
+                if port["service"] != "unknown" and port["version"] != "N/A":
+                    print(f"  - Servicio: {port['service']} {port['version']}")
+                    search_exploits(port["service"], port["version"])
 
     def run_banner_scan(self, ip, ports):
         """
