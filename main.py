@@ -3,7 +3,7 @@ from modules.reporting import generate_report
 import os
 
 def main():
-    target = "192.168.1.0/24"
+    target = "192.168.1.80"
     output_file = "results/scan_results.json"
     exploits_file = "results/exploits.json"
     report_file = "results/report.html"
@@ -30,11 +30,10 @@ def main():
         print("[-] No se encontraron hosts o hubo un error en el escaneo.")
 
     # Después del reconocimiento
-    recomendaciones = run_service_analysis()
-
-    if recomendaciones:
+    
+    if api.run_service_analysis:
         print("\n[+] Servicios críticos detectados:\n")
-        for ip, puertos in recomendaciones.items():
+        for ip, puertos in api.run_service_analysis.items():
             print(f"Host: {ip}")
             for puerto, acciones in puertos.items():
                 print(f"  - Puerto {puerto}: Acciones sugeridas -> {', '.join(acciones)}")
