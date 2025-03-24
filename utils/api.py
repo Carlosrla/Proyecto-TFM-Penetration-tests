@@ -1,4 +1,5 @@
 from modules.reconnaissance import Reconnaissance
+from modules.service_analysis import analyze_services
 
 class PentestAPI:
     def __init__(self):
@@ -13,3 +14,6 @@ class PentestAPI:
         :return: Resultados del escaneo en formato JSON.
         """
         return self.recon.run_nmap_scan(target, output_file, scan_type)
+    
+    def run_service_analysis():
+        return analyze_services()

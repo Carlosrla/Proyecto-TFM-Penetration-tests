@@ -29,5 +29,53 @@ def main():
     else:
         print("[-] No se encontraron hosts o hubo un error en el escaneo.")
 
+    # Después del reconocimiento
+recomendaciones = run_service_analysis()
+
+if recomendaciones:
+    print("\n[+] Servicios críticos detectados:\n")
+    for ip, puertos in recomendaciones.items():
+        print(f"Host: {ip}")
+        for puerto, acciones in puertos.items():
+            print(f"  - Puerto {puerto}: Acciones sugeridas -> {', '.join(acciones)}")
+    print("\n[*] ¿Cómo deseas proceder?\n")
+    
+    opciones = [
+        "1. Ejecutar ataques web (HTTP - Fuzzing)",
+        "2. Ejecutar ataque SMB (Responder + Crackeo)",
+        "3. Ejecutar enumeración avanzada",
+        "4. Ejecutar todo automáticamente",
+        "5. Salir"
+    ]
+    
+    for opcion in opciones:
+        print(opcion)
+
+    eleccion = input("\nSelecciona una opción (1-5): ")
+
+    if eleccion == "1":
+        print("[*] Ejecutando ataques web (fuzzing)...")
+        # Aquí llamarías a tu módulo web_fuzzing.py en el futuro
+
+    elif eleccion == "2":
+        print("[*] Ejecutando Responder y Crackeo de hashes...")
+        # Aquí llamarías a credential_capture + hash_cracking
+
+    elif eleccion == "3":
+        print("[*] Ejecutando enumeración avanzada...")
+        # Aquí invocarías advanced_enumeration.py
+
+    elif eleccion == "4":
+        print("[*] Ejecutando todo automáticamente...")
+        # Aquí irías ejecutando todo en cadena según lo detectado
+
+    elif eleccion == "5":
+        print("[*] Saliendo.")
+        exit(0)
+
+    else:
+        print("[!] Opción no válida. Terminando.")
+else:
+    print("[*] No se detectaron servicios sensibles para analizar.")
 if __name__ == "__main__":
     main()
