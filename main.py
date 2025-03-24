@@ -38,8 +38,8 @@ def main():
             print(f"Host: {ip}")
             for puerto, acciones in puertos.items():
                 print(f"  - Puerto {puerto}: Acciones sugeridas -> {', '.join(acciones)}")
-        print("\n[*] ¿Cómo deseas proceder?\n")
-        
+
+        # Generar menú dinámico basado en acciones detectadas
         acciones_detectadas = set()
         for ip, puertos in recommendations.items():
             for acciones in puertos.values():
@@ -60,7 +60,6 @@ def main():
             "analisis_ssl": "Analizar configuración de SSL/TLS"
         }
 
-        # Generar menú dinámico
         acciones_lista = sorted(list(acciones_detectadas))
         print("\n[*] ¿Cómo deseas proceder?\n")
         for idx, accion in enumerate(acciones_lista, start=1):
@@ -81,7 +80,6 @@ def main():
             accion_seleccionada = acciones_lista[eleccion - 1]
             print(f"[*] Ejecutando acción seleccionada: {accion_seleccionada}")
             # Aquí puedes enlazar con los módulos que correspondan según el nombre técnico
-            # Por ejemplo:
             if accion_seleccionada == "fuzzing_directorios":
                 print("[!] (Aquí se llamaría al módulo web_fuzzing.py)")
             elif accion_seleccionada == "responder":
@@ -90,7 +88,10 @@ def main():
                 print("[!] (Aquí se llamaría a hash_cracking.py)")
             elif accion_seleccionada == "analisis_rdp":
                 print("[!] (Aquí se llamaría a rdp_analysis.py)")
-            # etc...
+            elif accion_seleccionada == "enumeracion_avanzada":
+                print("[!] (Aquí se llamaría a advanced_enumeration.py)")
+            elif accion_seleccionada == "fuerza_bruta":
+                print("[!] (Aquí se lanzaría Hydra, Medusa u otra herramienta)")
 
         elif eleccion == len(acciones_lista) + 1:
             print("[*] Ejecutando todo automáticamente...")
@@ -101,9 +102,6 @@ def main():
             exit(0)
         else:
             print("[!] Opción fuera de rango. Terminando.")
-
-        else:
-            print("[!] Opción no válida. Terminando.")
     else:
         print("[*] No se detectaron servicios sensibles para analizar.")
 
