@@ -45,3 +45,4 @@ if __name__ == "__main__":
         print(f"Host: {ip}")
         for puerto, acciones in puertos.items():
             print(f"  - Puerto {puerto}: Acciones sugeridas -> {', '.join(acciones)}")
+
