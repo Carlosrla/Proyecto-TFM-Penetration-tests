@@ -40,38 +40,67 @@ def main():
                 print(f"  - Puerto {puerto}: Acciones sugeridas -> {', '.join(acciones)}")
         print("\n[*] ¿Cómo deseas proceder?\n")
         
-        opciones = [
-            "1. Ejecutar ataques web (HTTP - Fuzzing)",
-            "2. Ejecutar ataque SMB (Responder + Crackeo)",
-            "3. Ejecutar enumeración avanzada",
-            "4. Ejecutar todo automáticamente",
-            "5. Salir"
-        ]
-        
-        for opcion in opciones:
-            print(opcion)
+        acciones_detectadas = set()
+        for ip, puertos in recommendations.items():
+            for acciones in puertos.values():
+                acciones_detectadas.update(acciones)
 
-        eleccion = input("\nSelecciona una opción (1-5): ")
+        # Descripciones legibles para el usuario
+        descripciones = {
+            "fuzzing_directorios": "Ejecutar fuzzing web (ffuf, gobuster)",
+            "escaneo_nikto": "Escanear vulnerabilidades web (Nikto)",
+            "responder": "Capturar hashes con Responder (SMB)",
+            "crackeo_hashes": "Crackear hashes con Hashcat",
+            "enumeracion_avanzada": "Enumerar usuarios, shares, permisos (SMB)",
+            "analisis_rdp": "Analizar configuración RDP (Bluekeep, NLA)",
+            "fuerza_bruta": "Fuerza bruta contra servicios detectados (RDP/SSH/FTP)",
+            "login_anonimo": "Probar acceso anónimo en FTP",
+            "conexion_sin_password": "Intentar conexión MySQL sin contraseña",
+            "recoleccion_banner": "Recolectar banners SSH/FTP",
+            "analisis_ssl": "Analizar configuración de SSL/TLS"
+        }
 
-        if eleccion == "1":
-            print("[*] Ejecutando ataques web (fuzzing)...")
-            # Aquí llamarías a tu módulo web_fuzzing.py en el futuro
+        # Generar menú dinámico
+        acciones_lista = sorted(list(acciones_detectadas))
+        print("\n[*] ¿Cómo deseas proceder?\n")
+        for idx, accion in enumerate(acciones_lista, start=1):
+            desc = descripciones.get(accion, accion)
+            print(f"{idx}. {desc}")
 
-        elif eleccion == "2":
-            print("[*] Ejecutando Responder y Crackeo de hashes...")
-            # Aquí llamarías a credential_capture + hash_cracking
+        print(f"{len(acciones_lista) + 1}. Ejecutar todo automáticamente")
+        print(f"{len(acciones_lista) + 2}. Salir")
 
-        elif eleccion == "3":
-            print("[*] Ejecutando enumeración avanzada...")
-            # Aquí invocarías advanced_enumeration.py
+        # Entrada del usuario
+        try:
+            eleccion = int(input("\nSelecciona una opción (número): "))
+        except ValueError:
+            print("[!] Entrada no válida.")
+            return
 
-        elif eleccion == "4":
+        if 1 <= eleccion <= len(acciones_lista):
+            accion_seleccionada = acciones_lista[eleccion - 1]
+            print(f"[*] Ejecutando acción seleccionada: {accion_seleccionada}")
+            # Aquí puedes enlazar con los módulos que correspondan según el nombre técnico
+            # Por ejemplo:
+            if accion_seleccionada == "fuzzing_directorios":
+                print("[!] (Aquí se llamaría al módulo web_fuzzing.py)")
+            elif accion_seleccionada == "responder":
+                print("[!] (Aquí se llamaría a credential_capture.py)")
+            elif accion_seleccionada == "crackeo_hashes":
+                print("[!] (Aquí se llamaría a hash_cracking.py)")
+            elif accion_seleccionada == "analisis_rdp":
+                print("[!] (Aquí se llamaría a rdp_analysis.py)")
+            # etc...
+
+        elif eleccion == len(acciones_lista) + 1:
             print("[*] Ejecutando todo automáticamente...")
-            # Aquí irías ejecutando todo en cadena según lo detectado
+            # Aquí lanzarías en cadena todas las acciones detectadas
 
-        elif eleccion == "5":
+        elif eleccion == len(acciones_lista) + 2:
             print("[*] Saliendo.")
             exit(0)
+        else:
+            print("[!] Opción fuera de rango. Terminando.")
 
         else:
             print("[!] Opción no válida. Terminando.")
