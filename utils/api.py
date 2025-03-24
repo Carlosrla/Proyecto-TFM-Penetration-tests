@@ -15,5 +15,5 @@ class PentestAPI:
         """
         return self.recon.run_nmap_scan(target, output_file, scan_type)
     
-    def run_service_analysis():
-        return analyze_services()
+    def run_service_analysis(self, scan_results_path):
+        return analyze_services(scan_results_path)
