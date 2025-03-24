@@ -1,6 +1,5 @@
 from utils.api import PentestAPI
 from modules.reporting import generate_report
-from utils.api import run_service_analysis
 import os
 
 def main():
