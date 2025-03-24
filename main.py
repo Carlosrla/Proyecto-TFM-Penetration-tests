@@ -30,10 +30,11 @@ def main():
         print("[-] No se encontraron hosts o hubo un error en el escaneo.")
 
     # Después del reconocimiento
-    
-    if api.run_service_analysis:
+    recommendations = api.run_service_analysis(output_file)
+
+    if recommendations:
         print("\n[+] Servicios críticos detectados:\n")
-        for ip, puertos in api.run_service_analysis.items():
+        for ip, puertos in recommendations.items():
             print(f"Host: {ip}")
             for puerto, acciones in puertos.items():
                 print(f"  - Puerto {puerto}: Acciones sugeridas -> {', '.join(acciones)}")
