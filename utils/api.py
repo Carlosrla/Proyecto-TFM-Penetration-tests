@@ -1,5 +1,10 @@
+import os
+import time
 from modules.reconnaissance import Reconnaissance
 from modules.service_analysis import analyze_services
+from modules.credential_capture import run_responder
+from modules.hash_cracking import crack_hashes
+from modules.advanced_enumeration import enumerate_with_credentials
 
 class PentestAPI:
     def __init__(self):
@@ -17,3 +22,26 @@ class PentestAPI:
     
     def run_service_analysis(self, scan_results_path):
         return analyze_services(scan_results_path)
+    
+    def ejecutar_ataque_smb(self, interface, dictionary_path):
+        print("[*] Lanzando ataque SMB: Responder + Hashcat + Enumeración")
+
+        # Paso 1: Ejecutar Responder y capturar hashes
+        success = run_responder(interface)
+
+        if not success:
+            print("[-] No se capturaron hashes. Abortando módulo SMB.")
+            return
+
+        credenciales = crack_hashes("results/hashes.txt", dictionary_path)
+
+        if not credenciales:
+            print("[!] No se pudo crackear ningún hash.")
+            return
+
+        if not credenciales:
+            print("[!] No se pudo crackear ningún hash.")
+            return
+
+        # Paso 3: Enumeración avanzada
+        enumerate_with_credentials(credenciales)

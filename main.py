@@ -3,7 +3,8 @@ from modules.reporting import generate_report
 import os
 
 def main():
-    target = "192.168.1.80"
+    config = api.load_config()
+    target = config.get("ip_range")
     output_file = "results/scan_results.json"
     exploits_file = "results/exploits.json"
     report_file = "results/report.html"
@@ -84,7 +85,14 @@ def main():
 
         if eleccion == 1 and "smb" in modulos_disponibles:
             print("[*] Ejecutando Ataques SMB...")
-            # Aquí: responder → crackeo_hashes → enumeracion_avanzada
+
+            # Leer parámetros desde config.json
+            config = api.load_config()
+            interface = config.get("interface", "eth0")
+            dictionary = config.get("dictionary", "/usr/share/wordlists/rockyou.txt")
+
+            # Ejecutar el módulo SMB
+            api.ejecutar_ataque_smb(interface=interface, dictionary_path=dictionary)
 
         elif eleccion == 2 and "web" in modulos_disponibles:
             print("[*] Ejecutando Fuzzing y análisis web...")
