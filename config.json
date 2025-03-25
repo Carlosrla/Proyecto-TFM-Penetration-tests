@@ -1,5 +1,5 @@
 {
-    "ip_range": "192.168.1.80,192.168.1.50",
+    "ip_range": "192.168.1.80 192.168.1.50",
     "dictionary": "/usr/share/wordlists/rockyou.txt",
     "scan_options": "-p- --open -sV -T4",
     "interface": "eth0",

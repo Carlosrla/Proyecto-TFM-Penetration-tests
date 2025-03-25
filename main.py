@@ -9,7 +9,7 @@ def main():
 
     # Cargar la configuración      
     config = api.load_config()
-    target = config.get("ip_range")
+    target = config.get("ip_range", "192.168.1.0/24")
     output_file = "results/scan_results.json"
     exploits_file = "results/exploits.json"
     report_file = "results/report.html"
