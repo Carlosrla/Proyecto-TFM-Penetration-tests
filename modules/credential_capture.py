@@ -14,7 +14,7 @@ def run_responder(interface, wait_time=60, output_path="results/hashes.txt"):
     responder_db = "/usr/share/responder/Responder.db"
 
     responder_cmd = [
-        "sudo", "responder", "-I", interface, "-wrf", "-F", "-v"
+        "sudo", "responder", "-I", interface, "-P", "-F", "-v"
     ]
 
     print(f"[*] Ejecutando Responder en la interfaz {interface}...")
