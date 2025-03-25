@@ -39,71 +39,78 @@ def main():
             for puerto, acciones in puertos.items():
                 print(f"  - Puerto {puerto}: Acciones sugeridas -> {', '.join(acciones)}")
 
-        # Generar menú dinámico basado en acciones detectadas
-        acciones_detectadas = set()
+         # Agrupación de servicios por módulo lógico
+        modulos_disponibles = {}
+
         for ip, puertos in recommendations.items():
-            for acciones in puertos.values():
-                acciones_detectadas.update(acciones)
+            for puerto, acciones in puertos.items():
+                for accion in acciones:
+                    if accion in ["responder", "crackeo_hashes", "enumeracion_avanzada"]:
+                        modulos_disponibles["smb"] = True
+                    elif accion in ["fuzzing_directorios", "escaneo_nikto"]:
+                        modulos_disponibles["web"] = True
+                    elif accion in ["analisis_rdp", "fuerza_bruta"] and int(puerto) == 3389:
+                        modulos_disponibles["rdp"] = True
+                    elif accion in ["login_anonimo", "fuerza_bruta"] and int(puerto) == 21:
+                        modulos_disponibles["ftp"] = True
+                    elif accion in ["conexion_sin_password", "fuerza_bruta"] and int(puerto) == 3306:
+                        modulos_disponibles["mysql"] = True
 
-        # Descripciones legibles para el usuario
-        descripciones = {
-            "fuzzing_directorios": "Ejecutar fuzzing web (ffuf, gobuster)",
-            "escaneo_nikto": "Escanear vulnerabilidades web (Nikto)",
-            "responder": "Capturar hashes con Responder (SMB)",
-            "crackeo_hashes": "Crackear hashes con Hashcat",
-            "enumeracion_avanzada": "Enumerar usuarios, shares, permisos (SMB)",
-            "analisis_rdp": "Analizar configuración RDP (Bluekeep, NLA)",
-            "fuerza_bruta": "Fuerza bruta contra servicios detectados (RDP/SSH/FTP)",
-            "login_anonimo": "Probar acceso anónimo en FTP",
-            "conexion_sin_password": "Intentar conexión MySQL sin contraseña",
-            "recoleccion_banner": "Recolectar banners SSH/FTP",
-            "analisis_ssl": "Analizar configuración de SSL/TLS"
-        }
+        # Menú agrupado por módulo
+        print("\n[*] ¿Qué módulo deseas ejecutar?\n")
+        menu_modulos = []
+        if "smb" in modulos_disponibles:
+            menu_modulos.append("1. Ataques SMB (Responder + Crackeo + Enumeración)")
+        if "web" in modulos_disponibles:
+            menu_modulos.append("2. Análisis Web (Fuzzing + Nikto)")
+        if "rdp" in modulos_disponibles:
+            menu_modulos.append("3. Análisis RDP (BlueKeep, fuerza bruta)")
+        if "ftp" in modulos_disponibles:
+            menu_modulos.append("4. Ataques FTP (Login anónimo, fuerza bruta)")
+        if "mysql" in modulos_disponibles:
+            menu_modulos.append("5. Ataques MySQL (Sin password, fuerza bruta)")
 
-        acciones_lista = sorted(list(acciones_detectadas))
-        print("\n[*] ¿Cómo deseas proceder?\n")
-        for idx, accion in enumerate(acciones_lista, start=1):
-            desc = descripciones.get(accion, accion)
-            print(f"{idx}. {desc}")
+        menu_modulos.append(f"{len(menu_modulos)+1}. Ejecutar todo automáticamente")
+        menu_modulos.append(f"{len(menu_modulos)+2}. Salir")
 
-        print(f"{len(acciones_lista) + 1}. Ejecutar todo automáticamente")
-        print(f"{len(acciones_lista) + 2}. Salir")
+        for opcion in menu_modulos:
+            print(opcion)
 
-        # Entrada del usuario
         try:
             eleccion = int(input("\nSelecciona una opción (número): "))
         except ValueError:
             print("[!] Entrada no válida.")
             return
 
-        if 1 <= eleccion <= len(acciones_lista):
-            accion_seleccionada = acciones_lista[eleccion - 1]
-            print(f"[*] Ejecutando acción seleccionada: {accion_seleccionada}")
-            # Aquí puedes enlazar con los módulos que correspondan según el nombre técnico
-            if accion_seleccionada == "fuzzing_directorios":
-                print("[!] (Aquí se llamaría al módulo web_fuzzing.py)")
-            elif accion_seleccionada == "responder":
-                print("[!] (Aquí se llamaría a credential_capture.py)")
-            elif accion_seleccionada == "crackeo_hashes":
-                print("[!] (Aquí se llamaría a hash_cracking.py)")
-            elif accion_seleccionada == "analisis_rdp":
-                print("[!] (Aquí se llamaría a rdp_analysis.py)")
-            elif accion_seleccionada == "enumeracion_avanzada":
-                print("[!] (Aquí se llamaría a advanced_enumeration.py)")
-            elif accion_seleccionada == "fuerza_bruta":
-                print("[!] (Aquí se lanzaría Hydra, Medusa u otra herramienta)")
+        if eleccion == 1 and "smb" in modulos_disponibles:
+            print("[*] Ejecutando Ataques SMB...")
+            # Aquí: responder → crackeo_hashes → enumeracion_avanzada
 
-        elif eleccion == len(acciones_lista) + 1:
+        elif eleccion == 2 and "web" in modulos_disponibles:
+            print("[*] Ejecutando Fuzzing y análisis web...")
+            # Aquí: fuzzing_directorios → escaneo_nikto
+
+        elif eleccion == 3 and "rdp" in modulos_disponibles:
+            print("[*] Ejecutando análisis de RDP...")
+            # Aquí: analisis_rdp → fuerza_bruta
+
+        elif eleccion == 4 and "ftp" in modulos_disponibles:
+            print("[*] Ejecutando ataques FTP...")
+            # Aquí: login_anonimo → fuerza_bruta
+
+        elif eleccion == 5 and "mysql" in modulos_disponibles:
+            print("[*] Ejecutando ataques MySQL...")
+            # Aquí: conexion_sin_password → fuerza_bruta
+
+        elif eleccion == len(menu_modulos) - 1:
             print("[*] Ejecutando todo automáticamente...")
-            # Aquí lanzarías en cadena todas las acciones detectadas
+            # Ejecutar todos los módulos disponibles
 
-        elif eleccion == len(acciones_lista) + 2:
+        elif eleccion == len(menu_modulos):
             print("[*] Saliendo.")
             exit(0)
         else:
-            print("[!] Opción fuera de rango. Terminando.")
-    else:
-        print("[*] No se detectaron servicios sensibles para analizar.")
+            print("[!] Opción fuera de rango o módulo no disponible.")
 
 if __name__ == "__main__":
     main()
