@@ -12,7 +12,7 @@ class PentestAPI:
         self.recon = Reconnaissance()  # Inicializa el módulo de reconocimiento
 
     def load_config(self):
-    return base_load_config()
+        return base_load_config()
     
     def scan_network(self, target, output_file="scan_results.json", scan_type="critical"):
         """
