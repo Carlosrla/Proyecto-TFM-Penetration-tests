@@ -3,6 +3,11 @@ from modules.reporting import generate_report
 import os
 
 def main():
+
+    # Inicializar el API
+    api = PentestAPI()
+
+    # Cargar la configuración      
     config = api.load_config()
     target = config.get("ip_range")
     output_file = "results/scan_results.json"
@@ -12,8 +17,7 @@ def main():
     # Asegurarse de que el directorio "results" exista
     os.makedirs("results", exist_ok=True)
 
-    # Inicializar el API
-    api = PentestAPI()
+    
 
     # Fase 1: Reconocimiento
     print("[*] Iniciando fase de reconocimiento...")
