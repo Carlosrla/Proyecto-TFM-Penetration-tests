@@ -14,6 +14,10 @@ def crack_hashes(hashes_file, wordlist_path, output_path="results/creds.json"):
     # Asegurar carpetas
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
 
+    # Vaciar salida anterior
+    print("[*] Limpiando resultados anteriores de Hashcat...")
+    open(cracked_file, "w").close()
+
     # Comando Hashcat
     hashcat_cmd = [
         "hashcat", "-m", "5600", hashes_file, wordlist_path,
@@ -23,13 +27,14 @@ def crack_hashes(hashes_file, wordlist_path, output_path="results/creds.json"):
     print("[*] Ejecutando Hashcat para crackear hashes NTLMv2...")
 
     try:
-        subprocess.run(hashcat_cmd, check=True)
-    except subprocess.CalledProcessError as e:
+        result = subprocess.run(hashcat_cmd, capture_output=True, text=True)
+    except Exception as e:
         print(f"[!] Error al ejecutar Hashcat: {e}")
         return None
 
-    if not os.path.exists(cracked_file):
-        print("[-] No se generó el archivo de salida de Hashcat.")
+    # Verificar si el archivo de salida tiene contenido
+    if not os.path.exists(cracked_file) or os.path.getsize(cracked_file) == 0:
+        print("[-] No se pudo crackear ningún hash.")
         return None
 
     # Leer y guardar resultados en JSON
