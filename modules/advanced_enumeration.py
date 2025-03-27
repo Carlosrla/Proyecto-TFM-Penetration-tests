@@ -4,7 +4,8 @@ import os
 
 def enumerate_with_credentials(creds, scan_results_file="results/scan_results.json", log_file="results/smb_enum.log"):
     """
-    Usa CrackMapExec para enumerar hosts SMB según su rol (DC o máquina normal) y privilegios.
+    Usa CrackMapExec para enumerar hosts SMB con privilegios válidos.
+    Ejecuta tanto acciones generales como avanzadas, incluyendo detección de DC.
     """
 
     if not os.path.exists(scan_results_file):
@@ -15,57 +16,54 @@ def enumerate_with_credentials(creds, scan_results_file="results/scan_results.js
         data = json.load(f)
 
     hosts = data.get("hosts", [])
-    dc_ip = None
-    objetivos = []
-
-    for host in hosts:
-        ip = host.get("ip")
-        puertos = [p["port"] for p in host.get("open_ports", [])]
-
-        if 389 in puertos or 88 in puertos:
-            dc_ip = ip
-
-        if 445 in puertos:
-            objetivos.append(ip)
-
-    if not objetivos:
-        print("[!] No se encontraron objetivos SMB.")
+    if not hosts:
+        print("[!] No hay hosts en el archivo de escaneo.")
         return
 
     os.makedirs("results", exist_ok=True)
+
     with open(log_file, "w") as log:
         for cred in creds:
             user = cred.get("usuario")
             passwd = cred.get("password")
 
-            # Acciones generales (aplicables a todos los hosts)
-            acciones_generales = ["--shares", "--sessions", "--disks"]
+            for host in hosts:
+                ip = host.get("ip")
+                puertos = [p["port"] for p in host.get("open_ports", [])]
 
-            for ip in objetivos:
+                if 445 not in puertos:
+                    continue  # Saltar si no hay SMB
+
+                # Detectar si es un DC por los puertos 88 o 389
+                es_dc = 389 in puertos or 88 in puertos
+
+                acciones_generales = ["--shares", "--sessions", "--disks"]
+                acciones_avanzadas = ["--users", "--groups", "--pass-pol", "--computers", "--rid-brute"]
+
+                log.write(f"[{ip}] {user}:{passwd}\n")
+
                 for accion in acciones_generales:
-                    log.write(f"[{ip}] {user}:{passwd} {accion}\n")
+                    log.write(f"[{ip}] Ejecutando {accion}\n")
                     try:
                         result = subprocess.run(
                             ["crackmapexec", "smb", ip, "-u", user, "-p", passwd, accion],
-                            capture_output=True, text=True, timeout=20
+                            capture_output=True, text=True, timeout=30
                         )
                         log.write(result.stdout + "\n---\n")
                     except Exception as e:
                         log.write(f"[!] Error en {ip} con {accion}: {e}\n---\n")
 
-            # Acciones especiales para el DC
-            if dc_ip:
-                acciones_dc = ["--users", "--groups", "--pass-pol", "--computers", "--rid-brute"]
-
-                for accion in acciones_dc:
-                    log.write(f"[DC {dc_ip}] {user}:{passwd} {accion}\n")
-                    try:
-                        result = subprocess.run(
-                            ["crackmapexec", "smb", dc_ip, "-u", user, "-p", passwd, accion],
-                            capture_output=True, text=True, timeout=30
-                        )
-                        log.write(result.stdout + "\n---\n")
-                    except Exception as e:
-                        log.write(f"[!] Error en DC {dc_ip} con {accion}: {e}\n---\n")
+                if es_dc:
+                    log.write(f"[{ip}] Detectado como DC, ejecutando acciones avanzadas\n")
+                    for accion in acciones_avanzadas:
+                        log.write(f"[{ip}] Ejecutando {accion}\n")
+                        try:
+                            result = subprocess.run(
+                                ["crackmapexec", "smb", ip, "-u", user, "-p", passwd, accion],
+                                capture_output=True, text=True, timeout=40
+                            )
+                            log.write(result.stdout + "\n---\n")
+                        except Exception as e:
+                            log.write(f"[!] Error en {ip} con {accion}: {e}\n---\n")
 
     print(f"[+] Enumeración completada. Log guardado en {log_file}")
