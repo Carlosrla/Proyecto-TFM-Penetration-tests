@@ -101,6 +101,7 @@ def main():
         elif eleccion == 2 and "web" in modulos_disponibles:
             print("[*] Ejecutando Fuzzing y análisis web...")
             # Aquí: fuzzing_directorios → escaneo_nikto
+            api.ejecutar_analisis_web()
 
         elif eleccion == 3 and "rdp" in modulos_disponibles:
             print("[*] Ejecutando análisis de RDP...")

@@ -6,6 +6,7 @@ from modules.credential_capture import run_responder
 from modules.hash_cracking import crack_hashes
 from modules.advanced_enumeration import enumerate_with_credentials
 from utils.config import load_config as base_load_config
+from modules.web_analysis import run_web_analysis
 
 class PentestAPI:
     def __init__(self):
@@ -49,3 +50,9 @@ class PentestAPI:
 
         # Paso 3: Enumeración avanzada
         enumerate_with_credentials(credenciales)
+
+    def ejecutar_analisis_web(self):
+        """
+        Ejecuta análisis web (ffuf y nikto) sobre servicios HTTP/HTTPS detectados.
+        """
+        run_web_analysis()
