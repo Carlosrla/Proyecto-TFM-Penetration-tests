@@ -5,6 +5,9 @@ from datetime import datetime
 
 WEB_ENUM_DIR = "results/web_enum"
 WORDLIST = "/usr/share/seclists/Discovery/Web-Content/common.txt"
+DIRECTORIOS_INTERES = [
+    "DVWA", "admin", "dashboard", "phpmyadmin", "cms", "panel", "login"
+]
 
 def discover_directories(target_url):
     print(f"[*] Buscando directorios en {target_url} con FFUF...")
@@ -96,8 +99,12 @@ def analizar_servicios_web(scan_results_file="results/scan_results.json"):
                 directorios = discover_directories(base_url)
                 for url in directorios:
                     ruta_relativa = url.replace(base_url, "").strip("/")
-                    run_ffuf(base_url, ruta_relativa)
-                    run_nikto(ip, port, root_path=f"/{ruta_relativa}")
+
+                    if ruta_relativa.lower() in [d.lower() for d in DIRECTORIOS_INTERES]:
+                        run_ffuf(base_url, ruta_relativa)
+                        run_nikto(ip, port, root_path=f"/{ruta_relativa}")
+                    else:
+                        print(f"[-] Ignorando directorio irrelevante: {ruta_relativa}")
 
 
 def run_web_analysis():
