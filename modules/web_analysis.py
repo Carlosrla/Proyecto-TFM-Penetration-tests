@@ -101,11 +101,58 @@ def analizar_servicios_web(scan_results_file="results/scan_results.json"):
                     ruta_relativa = url.replace(base_url, "").strip("/")
 
                     if ruta_relativa.lower() in [d.lower() for d in DIRECTORIOS_INTERES]:
+                        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                        ffuf_out = os.path.join(WEB_ENUM_DIR, f"{ruta_relativa}_{timestamp}_ffuf.json")
+                        nikto_out = os.path.join(WEB_ENUM_DIR, f"{ruta_relativa}_{timestamp}_nikto.txt")
+
                         run_ffuf(base_url, ruta_relativa)
                         run_nikto(ip, port, root_path=f"/{ruta_relativa}")
+
+                        generar_analisis_web_final(ip, port, ruta_relativa, ffuf_out, nikto_out)
+
+                        # Opcional: borrar los archivos temporales
+                        os.remove(ffuf_out)
+                        os.remove(nikto_out)
                     else:
                         print(f"[-] Ignorando directorio irrelevante: {ruta_relativa}")
 
 
 def run_web_analysis():
     analizar_servicios_web()
+
+
+def generar_analisis_web_final(ip, port, ruta_relativa, ffuf_json, nikto_txt):
+    salida_final = os.path.join(
+        WEB_ENUM_DIR,
+        f"{ip}_{port}_{ruta_relativa}_analisis.txt"
+    )
+
+    with open(salida_final, "w") as out:
+
+        out.write(f"# Análisis Web - {ip}:{port}/{ruta_relativa}\n\n")
+
+        # FFUF
+        out.write("== Rutas encontradas (FFUF) ==\n")
+        if os.path.exists(ffuf_json):
+            try:
+                with open(ffuf_json, "r") as f:
+                    data = json.load(f)
+                    for r in data.get("results", []):
+                        path = r.get("input", {}).get("FUZZ", "")
+                        status = r.get("status")
+                        out.write(f"- {path} [{status}]\n")
+            except Exception:
+                out.write("[!] Error al leer resultados FFUF.\n")
+        else:
+            out.write("[!] No se encontró el archivo FFUF.\n")
+
+        out.write("\n== Hallazgos Nikto ==\n")
+        if os.path.exists(nikto_txt):
+            with open(nikto_txt, "r") as f:
+                for line in f:
+                    if line.strip().startswith("+") and "Nikto" not in line:
+                        out.write(line)
+        else:
+            out.write("[!] No se encontró el archivo Nikto.\n")
+
+    print(f"[+] Análisis combinado guardado en {salida_final}")
