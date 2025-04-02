@@ -41,39 +41,27 @@ def discover_directories(target_url):
     return rutas
 
 
-def run_ffuf(target_url, ruta_relativa):
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    output_file = os.path.join(WEB_ENUM_DIR, f"{ruta_relativa}_{timestamp}_ffuf.json")
-
-    cmd = [
-        "ffuf",
-        "-u", f"{target_url}/{ruta_relativa}/FUZZ",
-        "-w", WORDLIST,
+def run_ffuf(target_url, dir_name, output_path):
+    wordlist = "/usr/share/seclists/Discovery/Web-Content/common.txt"
+    ffuf_cmd = [
+        "ffuf", "-u", f"{target_url}/{dir_name}/FUZZ",
+        "-w", wordlist,
         "-mc", "200,403,301,302",
         "-of", "json",
-        "-o", output_file
+        "-o", output_path
     ]
+    print(f"[*] Ejecutando FFUF contra {target_url}/{dir_name}...")
+    subprocess.run(ffuf_cmd, stdout=subprocess.DEVNULL)
+    print(f"[+] Guardado en {output_path}")
 
-    print(f"[*] Ejecutando FFUF en {target_url}/{ruta_relativa}/")
-    subprocess.run(cmd, stdout=subprocess.DEVNULL)
-    print(f"[+] Guardado en {output_file}")
 
-
-def run_nikto(ip, port, root_path=""):
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    output_file = os.path.join(WEB_ENUM_DIR, f"{ip}_{port}_{root_path.strip('/').replace('/', '_')}_{timestamp}_nikto.txt")
-
-    cmd = [
-        "nikto", "-host", ip, "-port", str(port),
-        "-output", output_file
-    ]
-
+def run_nikto(ip, port, output_path, root_path=""):
+    cmd = ["nikto", "-host", ip, "-port", str(port), "-output", output_path]
     if root_path:
-        cmd.extend(["-root", root_path])
-
-    print(f"[*] Ejecutando Nikto en {ip}:{port}{root_path}")
+        cmd += ["-root", root_path]
+    print(f"[*] Ejecutando Nikto en {ip}:{port}{root_path}...")
     subprocess.run(cmd, stdout=subprocess.DEVNULL)
-    print(f"[+] Guardado en {output_file}")
+    print(f"[+] Guardado en {output_path}")
 
 
 def analizar_servicios_web(scan_results_file="results/scan_results.json"):
@@ -111,8 +99,10 @@ def analizar_servicios_web(scan_results_file="results/scan_results.json"):
                         generar_analisis_web_final(ip, port, ruta_relativa, ffuf_out, nikto_out)
 
                         # Opcional: borrar los archivos temporales
-                        os.remove(ffuf_out)
-                        os.remove(nikto_out)
+                        if os.path.exists(ffuf_out):
+                            os.remove(ffuf_out)
+                        if os.path.exists(nikto_out):
+                            os.remove(nikto_out)
                     else:
                         print(f"[-] Ignorando directorio irrelevante: {ruta_relativa}")
 
