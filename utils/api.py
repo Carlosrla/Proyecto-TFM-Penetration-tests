@@ -53,6 +53,7 @@ class PentestAPI:
 
     def ejecutar_analisis_web(self):
         """
-        Ejecuta análisis web (ffuf y nikto) sobre servicios HTTP/HTTPS detectados.
+        Lanza el análisis web completo (descubrimiento de directorios + FFUF + Nikto).
         """
+        print("[*] Iniciando análisis web...")
         run_web_analysis()
