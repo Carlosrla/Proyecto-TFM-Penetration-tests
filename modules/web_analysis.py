@@ -93,8 +93,8 @@ def analizar_servicios_web(scan_results_file="results/scan_results.json"):
                         ffuf_out = os.path.join(WEB_ENUM_DIR, f"{ruta_relativa}_{timestamp}_ffuf.json")
                         nikto_out = os.path.join(WEB_ENUM_DIR, f"{ruta_relativa}_{timestamp}_nikto.txt")
 
-                        run_ffuf(base_url, ruta_relativa)
-                        run_nikto(ip, port, root_path=f"/{ruta_relativa}")
+                        run_ffuf(base_url, ruta_relativa, ffuf_out)
+                        run_nikto(ip, port, nikto_out, root_path=f"/{ruta_relativa}")
 
                         generar_analisis_web_final(ip, port, ruta_relativa, ffuf_out, nikto_out)
 
