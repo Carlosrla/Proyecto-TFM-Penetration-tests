@@ -55,20 +55,25 @@ def run_ffuf(target_url, dir_name, output_path):
     print(f"[+] Guardado en {output_path}")
 
 
-def run_nikto(ip, port, output_path, root_path=""):
-    """
-    Ejecuta Nikto correctamente separando IP y puerto, y opcionalmente usando el parámetro -root.
-    """
+def run_nikto(ip, port, output_path):
     cmd = [
         "nikto",
         "-host", ip,
         "-port", str(port),
-        "-output", output_path,
+        "-output", output_path
     ]
 
-    print(f"[*] Ejecutando Nikto en {ip}:{port}{root_path}...")
-    subprocess.run(cmd, stdout=subprocess.DEVNULL)
-    print(f"[+] Guardado en {output_path}")
+    print(f"[DEBUG] Ejecutando: {' '.join(cmd)}")
+    result = subprocess.run(cmd, capture_output=True, text=True)
+
+    print(f"[DEBUG] STDOUT:\n{result.stdout[:500]}")
+    print(f"[DEBUG] STDERR:\n{result.stderr[:500]}")
+    print(f"[DEBUG] Código de salida: {result.returncode}")
+
+    if result.returncode != 0:
+        print("[!] Nikto ha fallado al ejecutarse.")
+    else:
+        print(f"[+] Nikto finalizó. Resultados en {output_path}")
 
 
 def analizar_servicios_web(scan_results_file="results/scan_results.json"):
