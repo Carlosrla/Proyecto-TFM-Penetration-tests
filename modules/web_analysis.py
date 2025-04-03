@@ -55,26 +55,23 @@ def run_ffuf(target_url, dir_name, output_path):
     print(f"[+] Guardado en {output_path}")
 
 
-def run_nikto(ip, port, output_path):
-    cmd = [
-        "nikto",
-        "-host", ip,
-        "-port", str(port),
-        "-output", output_path
-    ]
-    print(f"ip:{ip} port:{port}")
-    print(f"[DEBUG] Ejecutando: {' '.join(cmd)}")
-    result = subprocess.run(cmd, capture_output=True, text=True)
+def run_nikto(ip, port, output_path, root_path=""):
+    """
+    Ejecuta Nikto correctamente desde shell, como si fuera en terminal.
+    """
+    base_cmd = f"nikto -host {ip} -port {port} -output {output_path}"
+    
 
-    print(f"[DEBUG] STDOUT:\n{result.stdout[:500]}")
-    print(f"[DEBUG] STDERR:\n{result.stderr[:500]}")
+    print(f"[*] Ejecutando Nikto en {ip}:{port}...")
+    result = subprocess.run(base_cmd, shell=True, capture_output=True, text=True)
+
+    print("[DEBUG] STDOUT:")
+    print(result.stdout)
+    print("[DEBUG] STDERR:")
+    print(result.stderr)
     print(f"[DEBUG] Código de salida: {result.returncode}")
 
-    if result.returncode != 0:
-        print("[!] Nikto ha fallado al ejecutarse.")
-    else:
-        print(f"[+] Nikto finalizó. Resultados en {output_path}")
-
+    print(f"[+] Guardado en {output_path}")
 
 def analizar_servicios_web(scan_results_file="results/scan_results.json"):
     if not os.path.exists(scan_results_file):
