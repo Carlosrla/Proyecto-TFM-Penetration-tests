@@ -126,9 +126,9 @@ def generar_analisis_web_final(ip, port, ruta_relativa, ffuf_json, nuclei_json):
             out.write("[!] No se encontró el archivo FFUF.\n")
 
         out.write("\n== Hallazgos Nuclei ==\n")
-        if os.path.exists(nuclei_txt):
+        if os.path.exists(nuclei_json):
             try:
-                with open(nuclei_txt, "r") as f:
+                with open(nuclei_json, "r") as f:
                     for line in f:
                         out.write(line)
             except Exception:
