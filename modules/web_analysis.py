@@ -59,9 +59,19 @@ def run_nikto(ip, port, output_path, root_path=""):
     cmd = ["nikto", "-host", ip, "-port", str(port), "-output", output_path, "-Tuning", "x"]
     if root_path:
         cmd += ["-root", root_path]
-    print(f"[*] Ejecutando Nikto en {ip}:{port}{root_path}...")
-    subprocess.run(cmd, stdout=subprocess.DEVNULL)
-    print(f"[+] Guardado en {output_path}")
+
+    print(f"[DEBUG] Ejecutando comando Nikto: {' '.join(cmd)}")  # <-- este log
+    subprocess.run(cmd)
+    if os.path.exists(output_path):
+        print(f"[+] Archivo Nikto generado correctamente.")
+        with open(output_path, "r") as f:
+            contenido = f.read()
+            print(f"[DEBUG] Primeras líneas del resultado Nikto:\n{contenido[:500]}")
+    else:
+        print("[!] Nikto no generó ningún archivo.")
+    print(f"[DEBUG] Verificando si Nikto generó el archivo: {output_path}")  # <-- este log
+    print(f"[DEBUG] Existe el archivo? {os.path.exists(output_path)}")  # <-- este log
+
 
 
 def analizar_servicios_web(scan_results_file="results/scan_results.json"):
@@ -99,10 +109,10 @@ def analizar_servicios_web(scan_results_file="results/scan_results.json"):
                         generar_analisis_web_final(ip, port, ruta_relativa, ffuf_out, nikto_out)
 
                         # Opcional: borrar los archivos temporales
-                        if os.path.exists(ffuf_out):
-                            os.remove(ffuf_out)
-                        if os.path.exists(nikto_out):
-                            os.remove(nikto_out)
+                       # if os.path.exists(ffuf_out):
+                       #     os.remove(ffuf_out)
+                        #if os.path.exists(nikto_out):
+                         #   os.remove(nikto_out)
                     else:
                         print(f"[-] Ignorando directorio irrelevante: {ruta_relativa}")
 
