@@ -62,7 +62,7 @@ def run_nikto(ip, port, output_path):
         "-port", str(port),
         "-output", output_path
     ]
-
+    print(f"ip:{ip} port:{port}")
     print(f"[DEBUG] Ejecutando: {' '.join(cmd)}")
     result = subprocess.run(cmd, capture_output=True, text=True)
 
