@@ -58,21 +58,15 @@ def run_ffuf(target_url, dir_name, output_path):
 import os
 
 def run_nikto(ip, port, output_path, root_path=""):
-    """
-    Ejecuta Nikto de forma limpia usando os.system(), como si fuera en terminal.
-    Evita problemas de subprocess interpretando mal argumentos.
-    """
-    cmd = f"nikto -host {ip} -port {port} -output {output_path}"
-    if root_path:
-        cmd += f" -root {root_path}"
-
-    print(f"[*] Ejecutando Nikto con:\n{cmd}\n")
+    cmd = f"./run_nikto.sh {ip} {port} {output_path}"
+    print(f"[*] Ejecutando Nikto con wrapper:\n{cmd}")
     exit_code = os.system(cmd)
 
     if exit_code == 0:
-        print(f"[+] Nikto completado y guardado en {output_path}")
+        print(f"[+] Nikto ejecutado correctamente y guardado en {output_path}")
     else:
-        print(f"[!] Nikto devolvió código de salida {exit_code}")
+        print(f"[!] Fallo al ejecutar Nikto (código {exit_code})")
+
 
 
 def analizar_servicios_web(scan_results_file="results/scan_results.json"):
