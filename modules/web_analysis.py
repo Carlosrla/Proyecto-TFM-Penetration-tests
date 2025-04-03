@@ -40,12 +40,10 @@ def discover_directories(target_url):
 
     return rutas
 
-
 def run_ffuf(target_url, dir_name, output_path):
-    wordlist = "/usr/share/seclists/Discovery/Web-Content/common.txt"
     ffuf_cmd = [
         "ffuf", "-u", f"{target_url}/{dir_name}/FUZZ",
-        "-w", wordlist,
+        "-w", WORDLIST,
         "-mc", "200,403,301,302",
         "-of", "json",
         "-o", output_path
@@ -54,20 +52,11 @@ def run_ffuf(target_url, dir_name, output_path):
     subprocess.run(ffuf_cmd, stdout=subprocess.DEVNULL)
     print(f"[+] Guardado en {output_path}")
 
-
-import os
-
-def run_nikto(ip, port, output_path, root_path=""):
-    cmd = f"./run_nikto.sh {ip} {port} {output_path}"
-    print(f"[*] Ejecutando Nikto con wrapper:\n{cmd}")
-    exit_code = os.system(cmd)
-
-    if exit_code == 0:
-        print(f"[+] Nikto ejecutado correctamente y guardado en {output_path}")
-    else:
-        print(f"[!] Fallo al ejecutar Nikto (código {exit_code})")
-
-
+def run_nuclei(target_url, output_path):
+    cmd = ["nuclei", "-u", target_url, "-json", "-o", output_path]
+    print(f"[*] Ejecutando Nuclei contra {target_url}...")
+    subprocess.run(cmd, stdout=subprocess.DEVNULL)
+    print(f"[+] Resultado Nuclei guardado en {output_path}")
 
 def analizar_servicios_web(scan_results_file="results/scan_results.json"):
     if not os.path.exists(scan_results_file):
@@ -96,37 +85,32 @@ def analizar_servicios_web(scan_results_file="results/scan_results.json"):
                     if ruta_relativa.lower() in [d.lower() for d in DIRECTORIOS_INTERES]:
                         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
                         ffuf_out = os.path.join(WEB_ENUM_DIR, f"{ruta_relativa}_{timestamp}_ffuf.json")
-                        nikto_out = os.path.join(WEB_ENUM_DIR, f"{ruta_relativa}_{timestamp}_nikto.txt")
+                        nuclei_out = os.path.join(WEB_ENUM_DIR, f"{ruta_relativa}_{timestamp}_nuclei.json")
 
                         run_ffuf(base_url, ruta_relativa, ffuf_out)
-                        run_nikto(ip, port, nikto_out)
+                        run_nuclei(url, nuclei_out)
 
-                        generar_analisis_web_final(ip, port, ruta_relativa, ffuf_out, nikto_out)
+                        generar_analisis_web_final(ip, port, ruta_relativa, ffuf_out, nuclei_out)
 
-                        # Opcional: borrar los archivos temporales
                         if os.path.exists(ffuf_out):
                             os.remove(ffuf_out)
-                        if os.path.exists(nikto_out):
-                            os.remove(nikto_out)
+                        if os.path.exists(nuclei_out):
+                            os.remove(nuclei_out)
                     else:
                         print(f"[-] Ignorando directorio irrelevante: {ruta_relativa}")
-
 
 def run_web_analysis():
     analizar_servicios_web()
 
-
-def generar_analisis_web_final(ip, port, ruta_relativa, ffuf_json, nikto_txt):
+def generar_analisis_web_final(ip, port, ruta_relativa, ffuf_json, nuclei_json):
     salida_final = os.path.join(
         WEB_ENUM_DIR,
         f"{ip}_{port}_{ruta_relativa}_analisis.txt"
     )
 
     with open(salida_final, "w") as out:
-
         out.write(f"# Análisis Web - {ip}:{port}/{ruta_relativa}\n\n")
 
-        # FFUF
         out.write("== Rutas encontradas (FFUF) ==\n")
         if os.path.exists(ffuf_json):
             try:
@@ -141,14 +125,17 @@ def generar_analisis_web_final(ip, port, ruta_relativa, ffuf_json, nikto_txt):
         else:
             out.write("[!] No se encontró el archivo FFUF.\n")
 
-        out.write("\n== Hallazgos Nikto ==\n")
-        if os.path.exists(nikto_txt):
-            with open(nikto_txt, "r") as f:
-                for line in f:
-                    if line.strip().startswith("+") and "Nikto" not in line:
+        out.write("\n== Hallazgos Nuclei ==\n")
+        if os.path.exists(nuclei_json):
+            try:
+                with open(nuclei_json, "r") as f:
+                    for line in f:
                         out.write(line)
+            except Exception:
+                out.write("[!] Error al leer resultados de Nuclei.\n")
         else:
-            out.write("[!] No se encontró el archivo Nikto.\n")
-            out.write("\n" + "="*50 + "\n")
+            out.write("[!] No se encontró el archivo de Nuclei.\n")
+
+        out.write("\n" + "="*50 + "\n")
 
     print(f"[+] Análisis combinado guardado en {salida_final}")
