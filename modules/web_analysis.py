@@ -56,7 +56,7 @@ def run_ffuf(target_url, dir_name, output_path):
 
 
 def run_nikto(ip, port, output_path, root_path=""):
-    cmd = ["nikto", "-host", f"http://{ip}", "-port", str(port), "-output", output_path, "-Tuning", "x"]
+    cmd = ["nikto", "-host", ip, "-port", str(port), "-output", output_path, "-Tuning", "x"]
     if root_path:
         cmd += ["-root", root_path]
     print(f"[*] Ejecutando Nikto en {ip}:{port}{root_path}...")
@@ -94,7 +94,7 @@ def analizar_servicios_web(scan_results_file="results/scan_results.json"):
                         nikto_out = os.path.join(WEB_ENUM_DIR, f"{ruta_relativa}_{timestamp}_nikto.txt")
 
                         run_ffuf(base_url, ruta_relativa, ffuf_out)
-                        run_nikto(ip, port, nikto_out, root_path=f"/{ruta_relativa}")
+                        run_nikto(ip, port, nikto_out)
 
                         generar_analisis_web_final(ip, port, ruta_relativa, ffuf_out, nikto_out)
 
@@ -144,5 +144,6 @@ def generar_analisis_web_final(ip, port, ruta_relativa, ffuf_json, nikto_txt):
                         out.write(line)
         else:
             out.write("[!] No se encontró el archivo Nikto.\n")
+            out.write("\n" + "="*50 + "\n")
 
     print(f"[+] Análisis combinado guardado en {salida_final}")
