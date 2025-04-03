@@ -55,23 +55,25 @@ def run_ffuf(target_url, dir_name, output_path):
     print(f"[+] Guardado en {output_path}")
 
 
+import os
+
 def run_nikto(ip, port, output_path, root_path=""):
     """
-    Ejecuta Nikto correctamente desde shell, como si fuera en terminal.
+    Ejecuta Nikto de forma limpia usando os.system(), como si fuera en terminal.
+    Evita problemas de subprocess interpretando mal argumentos.
     """
-    base_cmd = f"nikto -host 192.168.1.80 -port 8080 -output {output_path}"
-    
+    cmd = f"nikto -host {ip} -port {port} -output {output_path}"
+    if root_path:
+        cmd += f" -root {root_path}"
 
-    print(f"[*] Ejecutando Nikto en {ip}:{port}...")
-    result = subprocess.run(base_cmd, shell=True, capture_output=True, text=True)
+    print(f"[*] Ejecutando Nikto con:\n{cmd}\n")
+    exit_code = os.system(cmd)
 
-    print("[DEBUG] STDOUT:")
-    print(result.stdout)
-    print("[DEBUG] STDERR:")
-    print(result.stderr)
-    print(f"[DEBUG] Código de salida: {result.returncode}")
+    if exit_code == 0:
+        print(f"[+] Nikto completado y guardado en {output_path}")
+    else:
+        print(f"[!] Nikto devolvió código de salida {exit_code}")
 
-    print(f"[+] Guardado en {output_path}")
 
 def analizar_servicios_web(scan_results_file="results/scan_results.json"):
     if not os.path.exists(scan_results_file):
