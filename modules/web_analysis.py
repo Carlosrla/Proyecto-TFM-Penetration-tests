@@ -56,7 +56,7 @@ def run_ffuf(target_url, dir_name, output_path):
 
 
 def run_nikto(ip, port, output_path, root_path=""):
-    cmd = ["nikto", "-host", ip, "-port", str(port), "-output", output_path]
+    cmd = ["nikto", "-host", f"http://{ip}", "-port", str(port), "-output", output_path, "-Tuning", "x"]
     if root_path:
         cmd += ["-root", root_path]
     print(f"[*] Ejecutando Nikto en {ip}:{port}{root_path}...")
