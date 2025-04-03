@@ -59,7 +59,7 @@ def run_nikto(ip, port, output_path, root_path=""):
     """
     Ejecuta Nikto correctamente desde shell, como si fuera en terminal.
     """
-    base_cmd = f"nikto -host {ip} -port {port} -output {output_path}"
+    base_cmd = f"nikto -host 192.168.1.80 -port 8080 -output {output_path}"
     
 
     print(f"[*] Ejecutando Nikto en {ip}:{port}...")
