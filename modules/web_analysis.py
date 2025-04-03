@@ -56,7 +56,7 @@ def run_ffuf(target_url, dir_name, output_path):
 
 
 def run_nikto(ip, port, output_path):
-    cmd = ["nikto", "-host", ip, "-port", str(port), "-output", output_path, "-Tuning", "x"]
+    cmd = ["nikto", "-host", ip, "-port", str(port), "-output", output_path]
 
     print(f"[*] Ejecutando Nikto en {ip}:{port}...")
     subprocess.run(cmd)
