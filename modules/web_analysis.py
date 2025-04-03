@@ -53,7 +53,7 @@ def run_ffuf(target_url, dir_name, output_path):
     print(f"[+] Guardado en {output_path}")
 
 def run_nuclei(target_url, output_path):
-    cmd = ["nuclei", "-u", target_url, "-json", "-o", output_path]
+    cmd = ["nuclei", "-u", target_url, "-o", output_path]
     print(f"[*] Ejecutando Nuclei contra {target_url}...")
     subprocess.run(cmd, stdout=subprocess.DEVNULL)
     print(f"[+] Resultado Nuclei guardado en {output_path}")
@@ -85,7 +85,7 @@ def analizar_servicios_web(scan_results_file="results/scan_results.json"):
                     if ruta_relativa.lower() in [d.lower() for d in DIRECTORIOS_INTERES]:
                         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
                         ffuf_out = os.path.join(WEB_ENUM_DIR, f"{ruta_relativa}_{timestamp}_ffuf.json")
-                        nuclei_out = os.path.join(WEB_ENUM_DIR, f"{ruta_relativa}_{timestamp}_nuclei.json")
+                        nuclei_out = os.path.join(WEB_ENUM_DIR, f"{ruta_relativa}_{timestamp}_nuclei.txt")
 
                         run_ffuf(base_url, ruta_relativa, ffuf_out)
                         run_nuclei(url, nuclei_out)
@@ -126,9 +126,9 @@ def generar_analisis_web_final(ip, port, ruta_relativa, ffuf_json, nuclei_json):
             out.write("[!] No se encontró el archivo FFUF.\n")
 
         out.write("\n== Hallazgos Nuclei ==\n")
-        if os.path.exists(nuclei_json):
+        if os.path.exists(nuclei_txt):
             try:
-                with open(nuclei_json, "r") as f:
+                with open(nuclei_txt, "r") as f:
                     for line in f:
                         out.write(line)
             except Exception:
