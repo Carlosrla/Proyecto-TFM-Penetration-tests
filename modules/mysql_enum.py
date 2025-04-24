@@ -1,13 +1,8 @@
-
 import subprocess
 import os
 import json
 
 def probar_login_mysql(ip, usuario, contrasena=""):
-    """
-    Intenta conectarse a MySQL en el host objetivo con las credenciales proporcionadas.
-    Retorna True si la conexión fue exitosa, False si fue denegada.
-    """
     try:
         resultado = subprocess.run(
             ["mysql", "-h", ip, "-u", usuario, f"-p{contrasena}", "--ssl=0", "-e", "SHOW DATABASES;"],
@@ -20,9 +15,6 @@ def probar_login_mysql(ip, usuario, contrasena=""):
         return False
 
 def obtener_banner_mysql(ip):
-    """
-    Obtiene información de versión de MySQL usando el banner.
-    """
     try:
         resultado = subprocess.run(["mysql", "-h", ip, "-P", "3306", "--ssl=0"], capture_output=True, timeout=5)
         salida = resultado.stdout.decode() + resultado.stderr.decode()
@@ -34,10 +26,6 @@ def obtener_banner_mysql(ip):
         return "No accesible"
 
 def enumerar_mysql(ip, credenciales=[], output_file="results/mysql_enum.json"):
-    """
-    Analiza el servicio MySQL del host dado.
-    Intenta logins, recoge versión y lista bases de datos y usuarios si accede.
-    """
     os.makedirs(os.path.dirname(output_file), exist_ok=True)
 
     resultados = {
@@ -50,9 +38,9 @@ def enumerar_mysql(ip, credenciales=[], output_file="results/mysql_enum.json"):
     }
 
     usuarios_a_probar = ["root", "admin", "mysql", "user"]
-    credenciales_default = [(u, "") for u in usuarios_a_probar]
+    contrasenas_comunes = ["", "root", "admin", "1234", "toor"]
+    credenciales_default = [(u, p) for u in usuarios_a_probar for p in contrasenas_comunes]
 
-    # Unir credenciales por defecto + capturadas
     pruebas = credenciales_default + [(c["usuario"], c["password"]) for c in credenciales]
 
     for usuario, password in pruebas:
