@@ -1,5 +1,6 @@
 import os
 import time
+import json
 from modules.reconnaissance import Reconnaissance
 from modules.service_analysis import analyze_services
 from modules.credential_capture import run_responder
@@ -8,6 +9,7 @@ from modules.advanced_enumeration import enumerate_with_credentials
 from utils.config import load_config as base_load_config
 from modules.web_analysis import run_web_analysis
 from modules.mysql_enum import enumerar_mysql
+
 class PentestAPI:
     def __init__(self):
         self.recon = Reconnaissance()  # Inicializa el módulo de reconocimiento
