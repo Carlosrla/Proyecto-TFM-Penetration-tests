@@ -7,7 +7,7 @@ from modules.hash_cracking import crack_hashes
 from modules.advanced_enumeration import enumerate_with_credentials
 from utils.config import load_config as base_load_config
 from modules.web_analysis import run_web_analysis
-
+from modules.mysql_enum import enumerar_mysql
 class PentestAPI:
     def __init__(self):
         self.recon = Reconnaissance()  # Inicializa el módulo de reconocimiento
