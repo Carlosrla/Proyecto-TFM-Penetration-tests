@@ -1,21 +1,8 @@
 import subprocess
 import os
 import json
-from datetime import datetime
 
-RESULTS_DIR = "results"
-MYSQL_RESULTS_DIR = os.path.join(RESULTS_DIR, "mysql")
-os.makedirs(MYSQL_RESULTS_DIR, exist_ok=True)
-
-CREDENCIALES_COMUNES = [
-    ("root", ""),
-    ("root", "root"),
-    ("root", "admin"),
-    ("root", "1234"),
-    ("root", "toor"),
-    ("admin", ""),
-    ("admin", "root")
-]
+MYSQL_RESULTS_DIR = "results"
 
 def probar_login_mysql(ip, usuario, contrasena=""):
     try:
@@ -23,7 +10,7 @@ def probar_login_mysql(ip, usuario, contrasena=""):
             ["mysql", "-h", ip, "-u", usuario, f"-p{contrasena}", "--ssl=0", "-e", "SHOW DATABASES;"],
             stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=5
         )
-        if b"Access denied" in resultado.stderr:
+        if "Access denied" in resultado.stderr.decode():
             return False
         return True
     except Exception:
@@ -31,7 +18,7 @@ def probar_login_mysql(ip, usuario, contrasena=""):
 
 def obtener_banner_mysql(ip):
     try:
-        resultado = subprocess.run(["mysql", "-h", ip, "--ssl=0"], capture_output=True, timeout=5)
+        resultado = subprocess.run(["mysql", "-h", ip, "-P", "3306", "--ssl=0"], capture_output=True, timeout=5)
         salida = resultado.stdout.decode() + resultado.stderr.decode()
         for linea in salida.splitlines():
             if "Ver" in linea or "Distrib" in linea:
@@ -40,10 +27,8 @@ def obtener_banner_mysql(ip):
     except Exception:
         return "No accesible"
 
-def enumerar_mysql(ipip, credenciales=[], output_file="results/mysql_enum.json"):
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    json_output_file = os.path.join(MYSQL_RESULTS_DIR, f"mysql_{ip}_enum.json")
-    txt_output_file = os.path.join(MYSQL_RESULTS_DIR, f"mysql_{ip}_analisis.txt")
+def enumerar_mysql(ip, credenciales, output_file):
+    os.makedirs(os.path.dirname(output_file), exist_ok=True)
 
     resultados = {
         "host": ip,
@@ -54,7 +39,14 @@ def enumerar_mysql(ipip, credenciales=[], output_file="results/mysql_enum.json")
         "users": []
     }
 
-    for usuario, password in CREDENCIALES_COMUNES:
+    usuarios_a_probar = ["root", "admin", "mysql", "user"]
+    contrasenas_comunes = ["", "root", "admin", "1234", "toor"]
+
+    pruebas = [(u, p) for u in usuarios_a_probar for p in contrasenas_comunes] + [
+        (c["usuario"], c["password"]) for c in credenciales
+    ]
+
+    for usuario, password in pruebas:
         clave = f"{usuario}:{password}"
         acceso = probar_login_mysql(ip, usuario, password)
         resultados["login_test"][clave] = "access_granted" if acceso else "access_denied"
@@ -78,25 +70,9 @@ def enumerar_mysql(ipip, credenciales=[], output_file="results/mysql_enum.json")
                 pass
             break
 
+    json_output_file = output_file
     with open(json_output_file, "w") as f:
         json.dump(resultados, f, indent=4)
 
-    with open(txt_output_file, "w") as out:
-        out.write(f"# Análisis MySQL - {ip}:3306\n\n")
-        out.write("== Pruebas de acceso ==\n")
-        for k, v in resultados["login_test"].items():
-            simbolo = "✅" if v == "access_granted" else "  "
-            out.write(f"- {k:<20} → {simbolo} {v}\n")
-
-        out.write("\n== Bases de datos detectadas ==\n")
-        for db in resultados["databases"]:
-            out.write(f"- {db}\n")
-
-        out.write("\n== Usuarios detectados ==\n")
-        for usr in resultados["users"]:
-            out.write(f"- {usr}\n")
-
-        out.write("\n" + "="*50 + "\n")
-
     print(f"[+] Resultados de MySQL guardados en {json_output_file}")
-    print(f"[+] Análisis formateado guardado en {txt_output_file}")
+    return resultados
