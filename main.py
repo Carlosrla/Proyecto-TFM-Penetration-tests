@@ -114,7 +114,8 @@ def main():
         elif eleccion == 5 and "mysql" in modulos_disponibles:
             print("[*] Ejecutando ataques MySQL...")
             # Aquí: conexion_sin_password → fuerza_bruta
-
+            print("[*] Ejecutando análisis de MySQL...")
+            api.run_mysql_analysis()
         elif eleccion == len(menu_modulos) - 1:
             print("[*] Ejecutando todo automáticamente...")
             # Ejecutar todos los módulos disponibles
