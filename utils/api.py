@@ -59,9 +59,9 @@ class PentestAPI:
         run_web_analysis()
     
     def run_mysql_analysis(self, scan_file="results/scan_results.json", creds_file="results/creds.json"):
-    """
-    Detecta si hay MySQL activo en los hosts y lanza el análisis correspondiente.
-    """
+        """
+        Detecta si hay MySQL activo en los hosts y lanza el análisis correspondiente.
+        """
         if not os.path.exists(scan_file):
             print(f"[!] Archivo de escaneo no encontrado: {scan_file}")
             return None
