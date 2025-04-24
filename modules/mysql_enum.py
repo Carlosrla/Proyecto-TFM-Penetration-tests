@@ -40,7 +40,7 @@ def obtener_banner_mysql(ip):
     except Exception:
         return "No accesible"
 
-def enumerar_mysql(ip):
+def enumerar_mysql(ipip, credenciales=[], output_file="results/mysql_enum.json"):
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     json_output_file = os.path.join(MYSQL_RESULTS_DIR, f"mysql_{ip}_enum.json")
     txt_output_file = os.path.join(MYSQL_RESULTS_DIR, f"mysql_{ip}_analisis.txt")
