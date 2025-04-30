@@ -58,7 +58,7 @@ def enumerar_mysql(ip, credenciales=[], output_file="results/mysql_enum.json"):
                 salida = subprocess.check_output([
                     "mysql", "-h", ip, "-u", usuario, f"-p{password}",
                     "-e", "SHOW DATABASES;"
-                ], stdin=subprocess.DEVNULL).decode()
+                ], stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).decode()
 
                 resultados["databases"] = [
                     db.strip() for db in salida.splitlines()[1:] if db.strip()
@@ -67,7 +67,7 @@ def enumerar_mysql(ip, credenciales=[], output_file="results/mysql_enum.json"):
                 salida_usuarios = subprocess.check_output([
                     "mysql", "-h", ip, "-u", usuario, f"-p{password}",
                     "-e", "SELECT user, host FROM mysql.user;"
-                ], stdin=subprocess.DEVNULL).decode()
+                ], stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).decode()
 
                 for linea in salida_usuarios.splitlines()[1:]:
                     resultados["users"].append(linea.strip())
