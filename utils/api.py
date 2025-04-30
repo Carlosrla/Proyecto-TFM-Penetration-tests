@@ -11,6 +11,7 @@ from modules.web_analysis import run_web_analysis
 from modules.mysql_enum import enumerar_mysql
 from modules.rdp_attack import run_rdp_attack
 from modules.ftp_attack import run_ftp_attack
+from utils.common import restaurar_stdin
 
 class PentestAPI:
     def __init__(self):
@@ -54,7 +55,7 @@ class PentestAPI:
 
         # Paso 3: Enumeración avanzada
         enumerate_with_credentials(credenciales)
-
+        restaurar_stdin()
         # Al finalizar, matar procesos peligrosos si siguen vivos
         try:
             subprocess.run(["pkill", "-f", "Responder"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
@@ -67,7 +68,7 @@ class PentestAPI:
         """
         print("[*] Iniciando análisis web...")
         run_web_analysis()
-
+        restaurar_stdin()
         try:
             subprocess.run(["pkill", "-f", "ffuf"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             subprocess.run(["pkill", "-f", "nikto"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
@@ -104,7 +105,7 @@ class PentestAPI:
             if 3306 in puertos:
                 print(f"[*] MySQL detectado en {ip}. Iniciando análisis...")
                 enumerar_mysql(ip, credenciales, output_file=f"results/mysql_{ip}_enum.json")
-        
+        restaurar_stdin()
         try:
             subprocess.run(["pkill", "-f", "mysql"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         except Exception as e:
@@ -112,7 +113,7 @@ class PentestAPI:
 
     def run_rdp_bruteforce(self):
         run_rdp_attack()
-
+        restaurar_stdin()
         try:
             subprocess.run(["pkill", "-f", "xfreerdp"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         except Exception as e:
@@ -120,7 +121,7 @@ class PentestAPI:
 
     def run_ftp_bruteforce(self):
         run_ftp_attack()
-
+        restaurar_stdin()
         try:
             subprocess.run(["pkill", "-f", "hydra"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         except Exception as e:

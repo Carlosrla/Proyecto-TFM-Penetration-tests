@@ -135,7 +135,6 @@ def main():
 
         elif eleccion == len(menu_modulos) - 1:
             print("[*] Generando informe final...")
-            from modules.reporting.report_generator import generar_informe_final
             generar_informe_final()
 
         elif eleccion == len(menu_modulos):
