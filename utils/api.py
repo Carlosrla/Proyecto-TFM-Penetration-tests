@@ -10,6 +10,8 @@ from utils.config import load_config as base_load_config
 from modules.web_analysis import run_web_analysis
 from modules.mysql_enum import enumerar_mysql
 from modules.rdp_attack import run_rdp_attack
+from modules.ftp_attack import run_ftp_attack
+
 class PentestAPI:
     def __init__(self):
         self.recon = Reconnaissance()  # Inicializa el módulo de reconocimiento
@@ -94,3 +96,7 @@ class PentestAPI:
     def run_rdp_bruteforce(self):
         from modules.rdp_attack import run_rdp_attack
         run_rdp_attack()
+
+    def run_ftp_bruteforce(self):
+        from modules.ftp_attack import run_ftp_attack
+        run_ftp_attack()

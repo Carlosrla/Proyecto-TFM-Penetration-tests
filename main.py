@@ -110,7 +110,7 @@ def main():
         elif eleccion == 4 and "ftp" in modulos_disponibles:
             print("[*] Ejecutando ataques FTP...")
             # Aquí: login_anonimo → fuerza_bruta
-
+            api.run_ftp_bruteforce()
         elif eleccion == 5 and "mysql" in modulos_disponibles:
             print("[*] Ejecutando ataques MySQL...")
             # Aquí: conexion_sin_password → fuerza_bruta
