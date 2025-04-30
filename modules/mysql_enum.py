@@ -32,12 +32,16 @@ def enumerar_mysql(ip, credenciales=[], output_file="results/mysql_enum.json"):
     Analiza el servicio MySQL del host dado.
     Intenta logins, recoge versión y lista bases de datos y usuarios si accede.
     """
+    import os
+    import json
+    import subprocess
+
     os.makedirs(os.path.dirname(output_file), exist_ok=True)
 
     resultados = {
         "host": ip,
         "port": 3306,
-        "version": obtener_banner_mysql(ip),
+        "version": "Desconocido",
         "login_test": {},
         "databases": [],
         "users": []
@@ -45,37 +49,39 @@ def enumerar_mysql(ip, credenciales=[], output_file="results/mysql_enum.json"):
 
     usuarios_a_probar = ["root", "admin", "mysql", "user"]
     credenciales_default = [(u, "") for u in usuarios_a_probar]
-
     pruebas = credenciales_default + [(c["usuario"], c["password"]) for c in credenciales]
 
     for usuario, password in pruebas:
         clave = f"{usuario}:{password}"
-        acceso = probar_login_mysql(ip, usuario, password)
-        resultados["login_test"][clave] = "access_granted" if acceso else "access_denied"
 
-        if acceso:
-            try:
-                salida = subprocess.check_output([
-                    "mysql", "-h", ip, "-u", usuario, f"-p{password}",
-                    "-e", "SHOW DATABASES;"
-                ], stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).decode()
+        try:
+            resultado = subprocess.run(
+                ["mysql", "-h", ip, "-u", usuario, f"-p{password}", "-e", "SHOW DATABASES;"],
+                stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=5
+            )
+            salida = resultado.stdout.decode() + resultado.stderr.decode()
 
-                resultados["databases"] = [
-                    db.strip() for db in salida.splitlines()[1:] if db.strip()
-                ]
+            if "ERROR" in salida or "denied" in salida.lower():
+                resultados["login_test"][clave] = "access_denied"
+                continue
 
-                salida_usuarios = subprocess.check_output([
-                    "mysql", "-h", ip, "-u", usuario, f"-p{password}",
-                    "-e", "SELECT user, host FROM mysql.user;"
-                ], stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).decode()
+            resultados["login_test"][clave] = "access_granted"
+            resultados["databases"] = [
+                db.strip() for db in salida.splitlines()[1:] if db.strip()
+            ]
 
-                for linea in salida_usuarios.splitlines()[1:]:
-                    resultados["users"].append(linea.strip())
+            resultado_users = subprocess.run(
+                ["mysql", "-h", ip, "-u", usuario, f"-p{password}", "-e", "SELECT user, host FROM mysql.user;"],
+                stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, timeout=5
+            )
 
-            except Exception:
-                pass
+            salida_users = resultado_users.stdout.decode()
+            for linea in salida_users.splitlines()[1:]:
+                resultados["users"].append(linea.strip())
 
-            break  # Solo necesitamos una conexión válida
+            break  # No hace falta seguir probando si ya accedimos
+        except Exception:
+            resultados["login_test"][clave] = "access_denied"
 
     with open(output_file, "w") as f:
         json.dump(resultados, f, indent=4)
