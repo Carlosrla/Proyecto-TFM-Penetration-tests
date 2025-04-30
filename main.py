@@ -86,6 +86,9 @@ def main():
 
         try:
             eleccion = int(input("\nSelecciona una opción (número): "))
+        except EOFError:
+            print("\n[!] No se pudo leer entrada. Finalizando ejecución.")
+            break
         except ValueError:
             print("[!] Entrada no válida.")
             continue
