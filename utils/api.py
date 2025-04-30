@@ -55,13 +55,25 @@ class PentestAPI:
         # Paso 3: Enumeración avanzada
         enumerate_with_credentials(credenciales)
 
+        # Al finalizar, matar procesos peligrosos si siguen vivos
+        try:
+            subprocess.run(["pkill", "-f", "Responder"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        except Exception as e:
+            print(f"[!] Error al finalizar Responder: {e}")
+
     def ejecutar_analisis_web(self):
         """
         Lanza el análisis web completo (descubrimiento de directorios + FFUF + Nikto).
         """
         print("[*] Iniciando análisis web...")
         run_web_analysis()
-    
+
+        try:
+            subprocess.run(["pkill", "-f", "ffuf"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            subprocess.run(["pkill", "-f", "nikto"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        except Exception as e:
+            print(f"[!] Error al limpiar procesos web: {e}")
+
     def run_mysql_analysis(self, scan_file="results/scan_results.json", creds_file="results/creds.json"):
         """
         Detecta si hay MySQL activo en los hosts y lanza el análisis correspondiente.
@@ -92,9 +104,24 @@ class PentestAPI:
             if 3306 in puertos:
                 print(f"[*] MySQL detectado en {ip}. Iniciando análisis...")
                 enumerar_mysql(ip, credenciales, output_file=f"results/mysql_{ip}_enum.json")
+        
+        try:
+            subprocess.run(["pkill", "-f", "mysql"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        except Exception as e:
+            print(f"[!] Error al limpiar procesos MySQL: {e}")
 
     def run_rdp_bruteforce(self):
         run_rdp_attack()
 
+        try:
+            subprocess.run(["pkill", "-f", "xfreerdp"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        except Exception as e:
+            print(f"[!] Error al limpiar procesos RDP: {e}")
+
     def run_ftp_bruteforce(self):
         run_ftp_attack()
+
+        try:
+            subprocess.run(["pkill", "-f", "hydra"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        except Exception as e:
+            print(f"[!] Error al limpiar procesos FTP: {e}")
