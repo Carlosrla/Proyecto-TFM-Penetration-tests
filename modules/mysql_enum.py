@@ -28,10 +28,6 @@ def obtener_banner_mysql(ip):
         return "No accesible"
 
 def enumerar_mysql(ip, credenciales=[], output_file="results/mysql_enum.json"):
-    """
-    Analiza el servicio MySQL del host dado.
-    Intenta logins, recoge versión y lista bases de datos y usuarios si accede.
-    """
     import os
     import json
     import subprocess
@@ -55,11 +51,12 @@ def enumerar_mysql(ip, credenciales=[], output_file="results/mysql_enum.json"):
         clave = f"{usuario}:{password}"
 
         try:
-            resultado = subprocess.run(
-                ["mysql", "-h", ip, "-u", usuario, f"-p{password}", "-e", "SHOW DATABASES;"],
-                stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=5
+            proc = subprocess.Popen(
+                ["mysql", "-h", ip, "-u", usuario, f"-p{password}", "-e", "SHOW DATABASES;", "--ssl=0"],
+                stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE
             )
-            salida = resultado.stdout.decode() + resultado.stderr.decode()
+            stdout, stderr = proc.communicate(timeout=10)
+            salida = stdout.decode() + stderr.decode()
 
             if "ERROR" in salida or "denied" in salida.lower():
                 resultados["login_test"][clave] = "access_denied"
@@ -70,16 +67,18 @@ def enumerar_mysql(ip, credenciales=[], output_file="results/mysql_enum.json"):
                 db.strip() for db in salida.splitlines()[1:] if db.strip()
             ]
 
-            resultado_users = subprocess.run(
-                ["mysql", "-h", ip, "-u", usuario, f"-p{password}", "-e", "SELECT user, host FROM mysql.user;"],
-                stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, timeout=5
+            proc_users = subprocess.Popen(
+                ["mysql", "-h", ip, "-u", usuario, f"-p{password}", "-e", "SELECT user, host FROM mysql.user;", "--ssl=0"],
+                stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL
             )
+            stdout_users, _ = proc_users.communicate(timeout=10)
 
-            salida_users = resultado_users.stdout.decode()
-            for linea in salida_users.splitlines()[1:]:
+            for linea in stdout_users.decode().splitlines()[1:]:
                 resultados["users"].append(linea.strip())
 
-            break  # No hace falta seguir probando si ya accedimos
+            break  # Con una credencial válida es suficiente
+        except subprocess.TimeoutExpired:
+            resultados["login_test"][clave] = "timeout"
         except Exception:
             resultados["login_test"][clave] = "access_denied"
 
