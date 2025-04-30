@@ -27,7 +27,11 @@ def obtener_banner_mysql(ip):
     except Exception:
         return "No accesible"
 
-def enumerar_mysql(ip, credenciales, output_file):
+def enumerar_mysql(ip, credenciales=[], output_file="results/mysql_enum.json"):
+    """
+    Analiza el servicio MySQL del host dado.
+    Intenta logins, recoge versión y lista bases de datos y usuarios si accede.
+    """
     os.makedirs(os.path.dirname(output_file), exist_ok=True)
 
     resultados = {
@@ -40,11 +44,9 @@ def enumerar_mysql(ip, credenciales, output_file):
     }
 
     usuarios_a_probar = ["root", "admin", "mysql", "user"]
-    contrasenas_comunes = ["", "root", "admin", "1234", "toor"]
+    credenciales_default = [(u, "") for u in usuarios_a_probar]
 
-    pruebas = [(u, p) for u in usuarios_a_probar for p in contrasenas_comunes] + [
-        (c["usuario"], c["password"]) for c in credenciales
-    ]
+    pruebas = credenciales_default + [(c["usuario"], c["password"]) for c in credenciales]
 
     for usuario, password in pruebas:
         clave = f"{usuario}:{password}"
@@ -54,25 +56,29 @@ def enumerar_mysql(ip, credenciales, output_file):
         if acceso:
             try:
                 salida = subprocess.check_output([
-                    "mysql", "-h", ip, "-u", usuario, f"-p{password}", "--ssl=0",
+                    "mysql", "-h", ip, "-u", usuario, f"-p{password}",
                     "-e", "SHOW DATABASES;"
-                ]).decode()
-                resultados["databases"] = [db.strip() for db in salida.splitlines()[1:] if db.strip()]
+                ], stdin=subprocess.DEVNULL).decode()
+
+                resultados["databases"] = [
+                    db.strip() for db in salida.splitlines()[1:] if db.strip()
+                ]
 
                 salida_usuarios = subprocess.check_output([
-                    "mysql", "-h", ip, "-u", usuario, f"-p{password}", "--ssl=0",
+                    "mysql", "-h", ip, "-u", usuario, f"-p{password}",
                     "-e", "SELECT user, host FROM mysql.user;"
-                ]).decode()
+                ], stdin=subprocess.DEVNULL).decode()
 
                 for linea in salida_usuarios.splitlines()[1:]:
                     resultados["users"].append(linea.strip())
+
             except Exception:
                 pass
-            break
 
-    json_output_file = output_file
-    with open(json_output_file, "w") as f:
+            break  # Solo necesitamos una conexión válida
+
+    with open(output_file, "w") as f:
         json.dump(resultados, f, indent=4)
 
-    print(f"[+] Resultados de MySQL guardados en {json_output_file}")
+    print(f"[+] Resultados de MySQL guardados en {output_file}")
     return resultados
