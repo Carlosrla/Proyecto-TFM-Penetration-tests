@@ -46,11 +46,15 @@ def run_responder(interface, wait_time=60, output_path="results/smb/hashes.txt")
     print(f"[*] Esperando {wait_time} segundos para captura de hashes...")
     time.sleep(wait_time)
 
-    # Parar Responder de forma segura
-    print("[*] Deteniendo Responder...")
     try:
         responder_proc.send_signal(signal.SIGINT)
+        responder_proc.wait(timeout=5)
+        print("[+] Responder detenido correctamente.")
+    except subprocess.TimeoutExpired:
+        print("[!] Responder no respondió a SIGINT. Forzando terminación...")
+        responder_proc.kill()
         responder_proc.wait()
+        print("[+] Responder terminado con kill().")
     except Exception as e:
         print(f"[!] Error al detener Responder: {e}")
 
