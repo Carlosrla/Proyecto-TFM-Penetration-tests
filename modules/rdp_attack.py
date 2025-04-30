@@ -43,8 +43,12 @@ def fuerza_bruta_rdp(ip, port=3389):
     return resultados
 
 def run_rdp_attack():
-    from utils.common import cargar_hosts
-    hosts = cargar_hosts()
+
+    with open("results/scan_results.json") as f:
+        data = json.load(f)
+
+    hosts = data.get("hosts", [])
+
     for host in hosts:
         ip = host.get("ip")
         for port_info in host.get("open_ports", []):
