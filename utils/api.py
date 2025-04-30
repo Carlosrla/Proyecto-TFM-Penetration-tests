@@ -90,3 +90,7 @@ class PentestAPI:
             if 3306 in puertos:
                 print(f"[*] MySQL detectado en {ip}. Iniciando análisis...")
                 enumerar_mysql(ip, credenciales, output_file=f"results/mysql_{ip}_enum.json")
+
+    def run_rdp_bruteforce(self):
+        from modules.rdp_attack import run_rdp_attack
+        run_rdp_attack()

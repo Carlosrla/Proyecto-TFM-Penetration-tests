@@ -106,7 +106,7 @@ def main():
         elif eleccion == 3 and "rdp" in modulos_disponibles:
             print("[*] Ejecutando análisis de RDP...")
             # Aquí: analisis_rdp → fuerza_bruta
-
+            api.run_rdp_bruteforce()
         elif eleccion == 4 and "ftp" in modulos_disponibles:
             print("[*] Ejecutando ataques FTP...")
             # Aquí: login_anonimo → fuerza_bruta
