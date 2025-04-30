@@ -94,9 +94,7 @@ class PentestAPI:
                 enumerar_mysql(ip, credenciales, output_file=f"results/mysql_{ip}_enum.json")
 
     def run_rdp_bruteforce(self):
-        from modules.rdp_attack import run_rdp_attack
         run_rdp_attack()
 
     def run_ftp_bruteforce(self):
-        from modules.ftp_attack import run_ftp_attack
         run_ftp_attack()
