@@ -1,5 +1,6 @@
 from utils.api import PentestAPI
 from modules.reporting import generate_report
+from modules.report_generator import generar_informe_final
 import os
 
 def main():
@@ -61,13 +62,13 @@ def main():
                     elif accion in ["conexion_sin_password", "fuerza_bruta"] and int(puerto) == 3306:
                         modulos_disponibles["mysql"] = True
 
-        # Menú agrupado por módulo
+         # Menú agrupado por módulo
         print("\n[*] ¿Qué módulo deseas ejecutar?\n")
         menu_modulos = []
         if "smb" in modulos_disponibles:
             menu_modulos.append("1. Ataques SMB (Responder + Crackeo + Enumeración)")
         if "web" in modulos_disponibles:
-            menu_modulos.append("2. Análisis Web (Fuzzing + Nikto)")
+            menu_modulos.append("2. Análisis Web (Fuzzing + Nuclei)")
         if "rdp" in modulos_disponibles:
             menu_modulos.append("3. Análisis RDP (BlueKeep, fuerza bruta)")
         if "ftp" in modulos_disponibles:
@@ -75,8 +76,12 @@ def main():
         if "mysql" in modulos_disponibles:
             menu_modulos.append("5. Ataques MySQL (Sin password, fuerza bruta)")
 
+        # Opción para generar informe final (siempre disponible)
+        menu_modulos.append(f"{len(menu_modulos)+1}. Generar informe final")
+
+        # Ejecutar todo automáticamente y salir
         menu_modulos.append(f"{len(menu_modulos)+1}. Ejecutar todo automáticamente")
-        menu_modulos.append(f"{len(menu_modulos)+2}. Salir")
+        menu_modulos.append(f"{len(menu_modulos)+1}. Salir")
 
         for opcion in menu_modulos:
             print(opcion)
@@ -89,40 +94,39 @@ def main():
 
         if eleccion == 1 and "smb" in modulos_disponibles:
             print("[*] Ejecutando Ataques SMB...")
-
-            # Leer parámetros desde config.json
             config = api.load_config()
             interface = config.get("interface", "eth0")
             dictionary = config.get("dictionary", "/usr/share/wordlists/rockyou.txt")
-
-            # Ejecutar el módulo SMB
             api.ejecutar_ataque_smb(interface=interface, dictionary_path=dictionary)
 
         elif eleccion == 2 and "web" in modulos_disponibles:
             print("[*] Ejecutando Fuzzing y análisis web...")
-            # Aquí: fuzzing_directorios → escaneo_nikto
             api.ejecutar_analisis_web()
 
         elif eleccion == 3 and "rdp" in modulos_disponibles:
             print("[*] Ejecutando análisis de RDP...")
-            # Aquí: analisis_rdp → fuerza_bruta
             api.run_rdp_bruteforce()
+
         elif eleccion == 4 and "ftp" in modulos_disponibles:
             print("[*] Ejecutando ataques FTP...")
-            # Aquí: login_anonimo → fuerza_bruta
             api.run_ftp_bruteforce()
+
         elif eleccion == 5 and "mysql" in modulos_disponibles:
             print("[*] Ejecutando ataques MySQL...")
-            # Aquí: conexion_sin_password → fuerza_bruta
-            print("[*] Ejecutando análisis de MySQL...")
             api.run_mysql_analysis()
+
+        elif eleccion == len(menu_modulos) - 2:
+            print("[*] Generando informe final...")
+            generar_informe_final()
+
         elif eleccion == len(menu_modulos) - 1:
             print("[*] Ejecutando todo automáticamente...")
-            # Ejecutar todos los módulos disponibles
+            # Aquí lanzarías todos los módulos activos en orden
 
         elif eleccion == len(menu_modulos):
             print("[*] Saliendo.")
             exit(0)
+
         else:
             print("[!] Opción fuera de rango o módulo no disponible.")
 

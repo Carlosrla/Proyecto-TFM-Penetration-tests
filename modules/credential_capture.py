@@ -4,7 +4,7 @@ import time
 import sqlite3
 import signal
 
-def run_responder(interface, wait_time=60, output_path="results/hashes.txt"):
+def run_responder(interface, wait_time=60, output_path="results/smb/hashes.txt"):
     """
     Ejecuta Responder en la interfaz especificada, espera X tiempo y extrae hashes capturados.
     Guarda los hashes NTLMv2 en output_path.

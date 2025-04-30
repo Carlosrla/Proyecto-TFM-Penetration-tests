@@ -3,7 +3,7 @@ import subprocess
 import os
 import json
 
-def crack_hashes(hashes_file, wordlist_path, output_path="results/creds.json"):
+def crack_hashes(hashes_file, wordlist_path, output_path="results/smb/creds.json"):
     """
     Crackea hashes NTLMv2 usando Hashcat con el modo apropiado.
     Guarda las credenciales crackeadas en formato JSON.

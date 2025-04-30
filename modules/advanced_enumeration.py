@@ -2,7 +2,7 @@ import json
 import subprocess
 import os
 
-def enumerate_with_credentials(creds, scan_results_file="results/scan_results.json", log_file="results/smb_enum.log"):
+def enumerate_with_credentials(creds, scan_results_file="results/scan_results.json", log_file="results/smb/smb_enum.log"):
     """
     Usa CrackMapExec para enumerar hosts SMB con privilegios válidos.
     Ejecuta tanto acciones generales como avanzadas, incluyendo detección de DC.
