@@ -98,17 +98,17 @@ class PentestAPI:
                 output_path = f"results/mysql/mysql_{ip}.json"
                 os.makedirs("results/mysql", exist_ok=True)
 
-                # Lanza en nueva terminal (Gnome)
+                # Ejecutar y esperar que la terminal termine
                 cmd = [
                     "gnome-terminal",
                     "-e",
-                    f"bash -c 'python3 modules/mysql_runner.py {ip} {output_path}; exec bash'"
+                    f"bash -c 'python3 modules/mysql_runner.py {ip} {output_path}'"
                 ]
                 try:
-                    subprocess.Popen(cmd)
-                    print("[+] Módulo MySQL ejecutándose en una nueva terminal.")
-                except Exception as e:
-                    print(f"[!] Error al lanzar nueva terminal: {e}")
+                    subprocess.run(cmd, check=True)  # ← espera hasta que la terminal se cierre
+                    print("[+] Módulo MySQL finalizado correctamente.")
+                except subprocess.CalledProcessError as e:
+                    print(f"[!] Error al lanzar terminal o ejecutar módulo: {e}")
 
     def run_rdp_bruteforce(self):
         run_rdp_attack()
