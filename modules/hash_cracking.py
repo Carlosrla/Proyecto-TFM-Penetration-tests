@@ -9,7 +9,7 @@ def crack_hashes(hashes_file, wordlist_path, output_path="results/smb/creds.json
     Guarda las credenciales crackeadas en formato JSON.
     """
 
-    cracked_file = "results/hashcat_cracked.txt"
+    cracked_file = "results/smb/hashcat_cracked.txt"
 
     # Asegurar carpetas
     os.makedirs(os.path.dirname(output_path), exist_ok=True)

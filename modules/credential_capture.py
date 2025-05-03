@@ -10,7 +10,7 @@ def run_responder(interface, wait_time=60, output_path="results/smb/hashes.txt")
     Guarda los hashes NTLMv2 en output_path.
     """
 
-    responder_log = "results/responder.log"
+    responder_log = "results/smb/responder.log"
     responder_db = "/usr/share/responder/Responder.db"
 
     responder_cmd = [
