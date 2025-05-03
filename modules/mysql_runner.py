@@ -8,7 +8,7 @@ ROOT_DIR = os.path.abspath(os.path.join(CURRENT_DIR, ".."))
 if ROOT_DIR not in sys.path:
     sys.path.insert(0, ROOT_DIR)
 
-from modules.mysql.mysql_enum import enumerar_mysql
+from mysql_enum import enumerar_mysql
 
 def cargar_credenciales():
     users_path = os.path.join(ROOT_DIR, "wordlists", "users.txt")
