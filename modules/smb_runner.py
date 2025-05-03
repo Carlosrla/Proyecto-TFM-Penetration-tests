@@ -30,7 +30,7 @@ def ejecutar_ataque_smb(interface, dictionary_path):
     # Ejecutar responder
     run_responder(interface)
 
-    hashes_path = "results/hashes.txt"
+    hashes_path = "results/smb/hashes.txt"
     if not os.path.exists(hashes_path) or os.path.getsize(hashes_path) == 0:
         print("[-] No se capturaron hashes.")
         input("[*] Pulsa ENTER para cerrar esta terminal.")

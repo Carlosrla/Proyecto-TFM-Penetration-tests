@@ -49,7 +49,7 @@ class PentestAPI:
         ]
 
         try:
-            subprocess.run(cmd, check=True)  # ← Espera a que se cierre la terminal
+            subprocess.run(cmd, check=True)
             print("[+] Módulo SMB finalizado.")
         except subprocess.CalledProcessError as e:
             print(f"[!] Error al ejecutar el módulo SMB: {e}")
