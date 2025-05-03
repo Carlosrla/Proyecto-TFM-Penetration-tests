@@ -27,10 +27,7 @@ def obtener_banner_mysql(ip):
     except Exception:
         return "No accesible"
 
-def enumerar_mysql(ip, credenciales=[], output_file="results/mysql_enum.json"):
-    import os
-    import json
-    import subprocess
+def enumerar_mysql(ip, credenciales=[], output_file="results/mysql/mysql_enum.json"):
 
     os.makedirs(os.path.dirname(output_file), exist_ok=True)
 

@@ -77,7 +77,7 @@ class PentestAPI:
         except Exception as e:
             print(f"[!] Error al limpiar procesos web: {e}")
 
-    def run_mysql_analysis(self, scan_file="results/scan_results.json", creds_file="results/creds.json"):
+    def run_mysql_analysis(self, scan_file="results/scan_results.json"):
         if not os.path.exists(scan_file):
             print(f"[!] Archivo de escaneo no encontrado: {scan_file}")
             return
@@ -105,8 +105,7 @@ class PentestAPI:
                     "python3",
                     "modules/mysql_runner.py",
                     ip,
-                    output_path,
-                    creds_file
+                    output_path
                 ]
                 try:
                     subprocess.Popen(cmd)
