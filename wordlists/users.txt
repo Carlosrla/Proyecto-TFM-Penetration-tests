@@ -1,3 +1,5 @@
 guest
 Administrador
 Admin
+admin
+root
