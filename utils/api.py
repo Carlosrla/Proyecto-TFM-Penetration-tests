@@ -1,6 +1,8 @@
 import os
 import time
 import json
+import subprocess
+
 from modules.reconnaissance import Reconnaissance
 from modules.service_analysis import analyze_services
 from modules.credential_capture import run_responder
@@ -77,39 +79,34 @@ class PentestAPI:
 
     def run_mysql_analysis(self, scan_file="results/scan_results.json", creds_file="results/creds.json"):
         """
-        Detecta si hay MySQL activo en los hosts y lanza el análisis correspondiente.
+        Detecta si hay MySQL activo en los hosts y lanza el análisis correspondiente como subproceso externo.
         """
         if not os.path.exists(scan_file):
             print(f"[!] Archivo de escaneo no encontrado: {scan_file}")
-            return None
+            return
 
         try:
             with open(scan_file, "r") as f:
                 datos = json.load(f)
         except Exception as e:
             print(f"[!] Error leyendo el archivo de escaneo: {e}")
-            return None
-
-        # Leer credenciales crackeadas si existen
-        credenciales = []
-        if os.path.exists(creds_file):
-            with open(creds_file, "r") as f:
-                try:
-                    credenciales = json.load(f)
-                except:
-                    pass
+            return
 
         for host in datos.get("hosts", []):
             ip = host.get("ip")
             puertos = [p["port"] for p in host.get("open_ports", [])]
             if 3306 in puertos:
                 print(f"[*] MySQL detectado en {ip}. Iniciando análisis...")
-                enumerar_mysql(ip, credenciales, output_file=f"results/mysql_{ip}_enum.json")
-        restaurar_stdin()
-        try:
-            subprocess.run(["pkill", "-f", "mysql"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        except Exception as e:
-            print(f"[!] Error al limpiar procesos MySQL: {e}")
+
+                output_path = f"results/mysql/mysql_{ip}.json"
+                os.makedirs("results/mysql", exist_ok=True)
+
+                cmd = ["python3", "modules/mysql_runner.py", ip, output_path, creds_file]
+                try:
+                    subprocess.run(cmd, check=True)
+                    print(f"[+] Resultados de MySQL guardados en {output_path}")
+                except subprocess.CalledProcessError as e:
+                    print(f"[!] Error al ejecutar el análisis de MySQL:\n{e}")
 
     def run_rdp_bruteforce(self):
         run_rdp_attack()
