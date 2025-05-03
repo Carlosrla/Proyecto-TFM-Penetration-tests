@@ -107,6 +107,8 @@ class PentestAPI:
                     print(f"[+] Resultados de MySQL guardados en {output_path}")
                 except subprocess.CalledProcessError as e:
                     print(f"[!] Error al ejecutar el análisis de MySQL:\n{e}")
+                finally:
+                    restaurar_stdin()
 
     def run_rdp_bruteforce(self):
         run_rdp_attack()
