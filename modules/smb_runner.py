@@ -14,7 +14,7 @@ from modules.advanced_enumeration import enumerate_with_credentials
 def ejecutar_ataque_smb(interface, dictionary_path):
     print("[*] Lanzando ataque SMB: Responder + Crackeo + Enumeración")
 
-    hashes_path = "results/hashes.txt"
+    hashes_path = "results/smb/hashes.txt"
 
     # Limpiar hashes anteriores
     try:
