@@ -102,7 +102,9 @@ class PentestAPI:
                 cmd = [
                     "gnome-terminal",
                     "--",
-                    f"bash -c 'python3 modules/mysql_runner.py {ip} {output_path}'"
+                    "bash",
+                    "-c",
+                    f"python3 modules/mysql_runner.py {ip} {output_path}"
                 ]
                 try:
                     subprocess.run(cmd, check=True)  # ← espera hasta que la terminal se cierre
