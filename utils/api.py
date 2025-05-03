@@ -38,14 +38,15 @@ class PentestAPI:
     def ejecutar_ataque_smb(self, interface, dictionary_path):
         print("[*] Ejecutando ataque SMB en nueva terminal...")
 
-        runner_path = os.path.abspath("modules/smb_runner.py")
+        script_path = os.path.abspath("modules/smb_runner.py")
+        dictionary_path = os.path.abspath(dictionary_path)
 
         cmd = [
             "gnome-terminal",
             "--",
             "bash",
             "-c",
-            f"python3 {runner_path} {interface} {dictionary_path}"
+            f"python3 {script_path} {interface} {dictionary_path}"
         ]
 
         try:
