@@ -42,7 +42,9 @@ def enumerar_mysql(ip, credenciales=[], output_file="results/mysql/mysql_enum.js
 
     usuarios_a_probar = ["root", "admin", "mysql", "user"]
     credenciales_default = [(u, "") for u in usuarios_a_probar]
-    pruebas = credenciales_default + [(c["usuario"], c["password"]) for c in credenciales]
+    pruebas = credenciales_default + [
+        (c.get("user", ""), c.get("password", "")) for c in credenciales
+    ]
 
     for usuario, password in pruebas:
         clave = f"{usuario}:{password}"
