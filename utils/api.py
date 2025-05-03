@@ -36,33 +36,23 @@ class PentestAPI:
         return analyze_services(scan_results_path)
     
     def ejecutar_ataque_smb(self, interface, dictionary_path):
-        print("[*] Lanzando ataque SMB: Responder + Hashcat + Enumeración")
+        print("[*] Ejecutando ataque SMB en nueva terminal...")
 
-        # Paso 1: Ejecutar Responder y capturar hashes
-        success = run_responder(interface)
+        runner_path = os.path.abspath("modules/smb_runner.py")
 
-        if not success:
-            print("[-] No se capturaron hashes. Abortando módulo SMB.")
-            return
+        cmd = [
+            "gnome-terminal",
+            "--",
+            "bash",
+            "-c",
+            f"python3 {runner_path} {interface} {dictionary_path}"
+        ]
 
-        credenciales = crack_hashes("results/hashes.txt", dictionary_path)
-
-        if not credenciales:
-            print("[!] No se pudo crackear ningún hash.")
-            return
-
-        if not credenciales:
-            print("[!] No se pudo crackear ningún hash.")
-            return
-
-        # Paso 3: Enumeración avanzada
-        enumerate_with_credentials(credenciales)
-        restaurar_stdin()
-        # Al finalizar, matar procesos peligrosos si siguen vivos
         try:
-            subprocess.run(["pkill", "-f", "Responder"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        except Exception as e:
-            print(f"[!] Error al finalizar Responder: {e}")
+            subprocess.run(cmd, check=True)  # ← Espera a que se cierre la terminal
+            print("[+] Módulo SMB finalizado.")
+        except subprocess.CalledProcessError as e:
+            print(f"[!] Error al ejecutar el módulo SMB: {e}")
 
     def ejecutar_analisis_web(self):
         """
