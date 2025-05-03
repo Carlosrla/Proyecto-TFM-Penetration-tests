@@ -78,41 +78,41 @@ class PentestAPI:
             print(f"[!] Error al limpiar procesos web: {e}")
 
     def run_mysql_analysis(self, scan_file="results/scan_results.json", creds_file="results/creds.json"):
-    if not os.path.exists(scan_file):
-        print(f"[!] Archivo de escaneo no encontrado: {scan_file}")
-        return
+        if not os.path.exists(scan_file):
+            print(f"[!] Archivo de escaneo no encontrado: {scan_file}")
+            return
 
-    try:
-        with open(scan_file, "r") as f:
-            datos = json.load(f)
-    except Exception as e:
-        print(f"[!] Error leyendo el archivo de escaneo: {e}")
-        return
+        try:
+            with open(scan_file, "r") as f:
+                datos = json.load(f)
+        except Exception as e:
+            print(f"[!] Error leyendo el archivo de escaneo: {e}")
+            return
 
-    for host in datos.get("hosts", []):
-        ip = host.get("ip")
-        puertos = [p["port"] for p in host.get("open_ports", [])]
-        if 3306 in puertos:
-            print(f"[*] MySQL detectado en {ip}. Iniciando análisis...")
+        for host in datos.get("hosts", []):
+            ip = host.get("ip")
+            puertos = [p["port"] for p in host.get("open_ports", [])]
+            if 3306 in puertos:
+                print(f"[*] MySQL detectado en {ip}. Iniciando análisis...")
 
-            output_path = f"results/mysql/mysql_{ip}.json"
-            os.makedirs("results/mysql", exist_ok=True)
+                output_path = f"results/mysql/mysql_{ip}.json"
+                os.makedirs("results/mysql", exist_ok=True)
 
-            # Lanza en nueva terminal (Gnome)
-            cmd = [
-                "gnome-terminal",
-                "--",
-                "python3",
-                "modules/mysql_runner.py",
-                ip,
-                output_path,
-                creds_file
-            ]
-            try:
-                subprocess.Popen(cmd)
-                print("[+] Módulo MySQL ejecutándose en una nueva terminal.")
-            except Exception as e:
-                print(f"[!] Error al lanzar nueva terminal: {e}")
+                # Lanza en nueva terminal (Gnome)
+                cmd = [
+                    "gnome-terminal",
+                    "--",
+                    "python3",
+                    "modules/mysql_runner.py",
+                    ip,
+                    output_path,
+                    creds_file
+                ]
+                try:
+                    subprocess.Popen(cmd)
+                    print("[+] Módulo MySQL ejecutándose en una nueva terminal.")
+                except Exception as e:
+                    print(f"[!] Error al lanzar nueva terminal: {e}")
 
     def run_rdp_bruteforce(self):
         run_rdp_attack()
