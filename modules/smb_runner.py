@@ -19,6 +19,14 @@ def ejecutar_ataque_smb(interface, dictionary_path):
     if os.path.exists(hashes_path):
     os.remove(hashes_path)
 
+    responder_log = "/usr/share/responder/Responder.db"
+    if os.path.exists(responder_log):
+        try:
+            os.remove(responder_log)
+            print("[*] Log de Responder limpiado.")
+        except Exception as e:
+            print(f"[!] No se pudo limpiar el log de Responder: {e}")
+
     # Ejecutar responder
     run_responder(interface)
 
