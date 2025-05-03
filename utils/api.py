@@ -101,11 +101,8 @@ class PentestAPI:
                 # Lanza en nueva terminal (Gnome)
                 cmd = [
                     "gnome-terminal",
-                    "--",
-                    "python3",
-                    "modules/mysql_runner.py",
-                    ip,
-                    output_path
+                    "-e",
+                    f"bash -c 'python3 modules/mysql_runner.py {ip} {output_path}; exec bash'"
                 ]
                 try:
                     subprocess.Popen(cmd)
