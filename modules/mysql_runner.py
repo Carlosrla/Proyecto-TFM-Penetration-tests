@@ -5,7 +5,7 @@ import json
 # Añadir el path raíz del proyecto para permitir imports desde 'modules'
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from modules.mysql.mysql_enum import enumerar_mysql
+from mysql.mysql_enum import enumerar_mysql
 
 def ejecutar_mysql_desde_args():
     """
