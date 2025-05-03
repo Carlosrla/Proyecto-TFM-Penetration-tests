@@ -36,23 +36,23 @@ class PentestAPI:
         return analyze_services(scan_results_path)
     
     def ejecutar_ataque_smb(self, interface, dictionary_path):
-    print("[*] Ejecutando ataque SMB en nueva terminal...")
+        print("[*] Ejecutando ataque SMB en nueva terminal...")
 
-    runner_path = os.path.abspath("modules/smb_runner.py")
+        runner_path = os.path.abspath("modules/smb_runner.py")
 
-    cmd = [
-        "gnome-terminal",
-        "--",
-        "bash",
-        "-c",
-        f"python3 {runner_path} {interface} {dictionary_path}"
-    ]
+        cmd = [
+            "gnome-terminal",
+            "--",
+            "bash",
+            "-c",
+            f"python3 {runner_path} {interface} {dictionary_path}"
+        ]
 
-    try:
-        subprocess.run(cmd, check=True)  # Espera hasta que termine
-        print("[+] Módulo SMB finalizado.")
-    except subprocess.CalledProcessError as e:
-        print(f"[!] Error al ejecutar el módulo SMB: {e}")
+        try:
+            subprocess.run(cmd, check=True)  # Espera hasta que termine
+            print("[+] Módulo SMB finalizado.")
+        except subprocess.CalledProcessError as e:
+            print(f"[!] Error al ejecutar el módulo SMB: {e}")
 
     def ejecutar_analisis_web(self):
         """
