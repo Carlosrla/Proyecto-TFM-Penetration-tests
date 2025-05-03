@@ -1,50 +1,43 @@
-import json
+import sys
 import os
+import json
+
+# Añadir el path raíz del proyecto para permitir imports desde 'modules'
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 from modules.mysql.mysql_enum import enumerar_mysql
 
-def ejecutar_mysql_standalone(scan_file="results/scan_results.json", creds_file="results/creds.json"):
-    if not os.path.exists(scan_file):
-        print(f"[!] Archivo de escaneo no encontrado: {scan_file}")
-        return
+def ejecutar_mysql_desde_args():
+    """
+    Ejecuta la enumeración MySQL usando argumentos pasados desde la línea de comandos.
+    Uso: python3 modules/mysql_runner.py <IP> <output_file> <creds_file>
+    """
+    if len(sys.argv) != 4:
+        print("Uso: python3 modules/mysql_runner.py <IP> <output_file> <creds_file>")
+        sys.exit(1)
 
-    try:
-        with open(scan_file, "r") as f:
-            datos = json.load(f)
-    except Exception as e:
-        print(f"[!] Error leyendo el archivo de escaneo: {e}")
-        return
+    ip = sys.argv[1]
+    output_file = sys.argv[2]
+    creds_file = sys.argv[3]
 
+    # Cargar credenciales
     credenciales = []
     if os.path.exists(creds_file):
         try:
             with open(creds_file, "r") as f:
                 credenciales = json.load(f)
-        except:
-            print("[!] Error al cargar las credenciales, se usará una lista vacía.")
-
-    for host in datos.get("hosts", []):
-        ip = host.get("ip")
-        puertos = [p["port"] for p in host.get("open_ports", [])]
-        if 3306 in puertos:
-            print(f"[*] MySQL detectado en {ip}. Iniciando enumeración...")
-            enumerar_mysql(ip, credenciales, output_file=f"results/mysql/mysql_{ip}.json")
-
-    print("[+] Enumeración MySQL finalizada.")
-
-if __name__ == "__main__":
-    import sys
-    if len(sys.argv) == 4:
-        ip = sys.argv[1]
-        output_file = sys.argv[2]
-        creds_file = sys.argv[3]
-
-        from modules.mysql.mysql_enum import enumerar_mysql
-        try:
-            with open(creds_file, "r") as f:
-                credenciales = json.load(f)
-        except:
+        except Exception as e:
+            print(f"[!] Error al leer el archivo de credenciales: {e}")
             credenciales = []
 
+    print(f"[*] Iniciando análisis MySQL en {ip}...")
+
+    try:
         enumerar_mysql(ip, credenciales, output_file)
-    else:
-        print("Uso: python3 mysql_runner.py <IP> <output_file> <creds_file>")
+        print(f"[+] Enumeración MySQL completada. Resultados guardados en {output_file}")
+    except Exception as e:
+        print(f"[!] Error durante la enumeración de MySQL: {e}")
+        sys.exit(1)
+
+if __name__ == "__main__":
+    ejecutar_mysql_desde_args()
