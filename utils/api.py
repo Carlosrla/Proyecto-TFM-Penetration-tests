@@ -101,7 +101,7 @@ class PentestAPI:
                 # Ejecutar y esperar que la terminal termine
                 cmd = [
                     "gnome-terminal",
-                    "-e",
+                    "--",
                     f"bash -c 'python3 modules/mysql_runner.py {ip} {output_path}'"
                 ]
                 try:
