@@ -114,12 +114,12 @@ class ReportGenerator:
         for ip, exploits in data.items():
             html.append(f"<h3>{ip}</h3><ul>")
             for exp in exploits:
-                if isinstance(exp, str):
-                    html.append(f"<li>{exp}</li>")
-                    continue
-                sev_class = exp.get("severity", "low").lower()
-                html.append(f"<li class='{sev_class}'><strong>{exp.get('name')}</strong> - Puerto {exp.get('port', '?')}<br>"
-                            f"{exp.get('description', '')}</li>")
+                if isinstance(exp, dict):
+                    sev_class = exp.get("severity", "low").lower()
+                    html.append(f"<li class='{sev_class}'><strong>{exp.get('name')}</strong> - Puerto {exp.get('port', '?')}<br>"
+                                f"{exp.get('description', '')}</li>")
+                else:
+                    html.append(f"<li>{str(exp)}</li>")
             html.append("</ul>")
         return "\n".join(html)
 
