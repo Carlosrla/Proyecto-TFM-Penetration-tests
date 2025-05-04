@@ -88,7 +88,6 @@ class ReportGenerator:
         html.append("</table>")
         return "\n".join(html)
 
-
     def seccion_scan(self, path):
         with open(path) as f:
             data = json.load(f)
@@ -100,7 +99,6 @@ class ReportGenerator:
         html.append("</ul></div>")
         return "\n".join(html)
 
-
     def seccion_exploits(self, path):
         with open(path) as f:
             data = json.load(f)
@@ -108,12 +106,14 @@ class ReportGenerator:
         for ip, exploits in data.items():
             html.append(f"<h3>{ip}</h3><ul>")
             for exp in exploits:
+                if isinstance(exp, str):
+                    html.append(f"<li>{exp}</li>")
+                    continue
                 sev_class = exp.get("severity", "low").lower()
                 html.append(f"<li class='{sev_class}'><strong>{exp.get('name')}</strong> - Puerto {exp.get('port', '?')}<br>"
                             f"{exp.get('description', '')}</li>")
             html.append("</ul>")
         return "\n".join(html)
-
 
     def seccion_mysql(self, dir_path):
         html = ["<h2>Análisis MySQL</h2>"]
@@ -131,7 +131,6 @@ class ReportGenerator:
                 html.append(f"<li>{user}</li>")
             html.append("</ul></div>")
         return "\n".join(html)
-
 
     def seccion_smb(self, hashes_path, creds_path, enum_log):
         html = ["<h2>Resultado SMB</h2><div class='box'>"]
@@ -156,7 +155,6 @@ class ReportGenerator:
             html.append("</pre></details>")
         html.append("</div>")
         return "\n".join(html)
-
 
     def seccion_web(self, dir_path):
         html = ["<h2>Análisis Web</h2>"]
@@ -189,7 +187,6 @@ class ReportGenerator:
         html.append("</div>")
         return "\n".join(html)
 
-
     def seccion_rdp(self, path):
         with open(path) as f:
             data = json.load(f)
@@ -203,7 +200,6 @@ class ReportGenerator:
             html.append("<p>No se encontraron credenciales válidas.</p>")
         html.append("</div>")
         return "\n".join(html)
-
 
 if __name__ == "__main__":
     gen = ReportGenerator()
