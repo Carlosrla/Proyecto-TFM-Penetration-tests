@@ -84,13 +84,16 @@ def analizar_servicios_web(scan_results_file="results/scan_results.json"):
 
                     if ruta_relativa.lower() in [d.lower() for d in DIRECTORIOS_INTERES]:
                         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-                        ffuf_out = os.path.join(WEB_ENUM_DIR, f"{ruta_relativa}_{timestamp}_ffuf.json")
-                        nuclei_out = os.path.join(WEB_ENUM_DIR, f"{ruta_relativa}_{timestamp}_nuclei.txt")
+                        subdir = os.path.join(WEB_ENUM_DIR, ruta_relativa)
+                        os.makedirs(subdir, exist_ok=True)
+
+                        ffuf_out = os.path.join(subdir, f"{ruta_relativa}_{timestamp}_ffuf.json")
+                        nuclei_out = os.path.join(subdir, f"{ruta_relativa}_{timestamp}_nuclei.txt")
 
                         run_ffuf(base_url, ruta_relativa, ffuf_out)
                         run_nuclei(url, nuclei_out)
 
-                        generar_analisis_web_final(ip, port, ruta_relativa, ffuf_out, nuclei_out)
+                        generar_analisis_web_final(ip, port, ruta_relativa, ffuf_out, nuclei_out, subdir)
 
                         if os.path.exists(ffuf_out):
                             os.remove(ffuf_out)
@@ -102,9 +105,9 @@ def analizar_servicios_web(scan_results_file="results/scan_results.json"):
 def run_web_analysis():
     analizar_servicios_web()
 
-def generar_analisis_web_final(ip, port, ruta_relativa, ffuf_json, nuclei_json):
+def generar_analisis_web_final(ip, port, ruta_relativa, ffuf_json, nuclei_json, output_dir):
     salida_final = os.path.join(
-        WEB_ENUM_DIR,
+        output_dir,
         f"{ip}_{port}_{ruta_relativa}_analisis.txt"
     )
 
