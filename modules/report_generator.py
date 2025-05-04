@@ -86,8 +86,8 @@ class ReportGenerator:
                 sev_class = sev.lower()
                 html.append(f"<tr class='{sev_class}'><td>{ip}</td><td>{servicio}</td><td>{tipo}</td><td>{sev}</td><td>{cred}</td></tr>")
             html.append("</table>")
-            return "
-    ".join(html)
+            return "\n".join(html)
+
 
     def seccion_scan(self, path):
         with open(path) as f:
@@ -98,8 +98,8 @@ class ReportGenerator:
             puertos = ", ".join(str(p["port"]) for p in host.get("open_ports", []))
             html.append(f"<li><strong>{ip}</strong> - Puertos: {puertos}</li>")
         html.append("</ul></div>")
-        return "
-".join(html)
+        return "\n".join(html)
+
 
     def seccion_exploits(self, path):
         with open(path) as f:
@@ -112,8 +112,8 @@ class ReportGenerator:
                 html.append(f"<li class='{sev_class}'><strong>{exp.get('name')}</strong> - Puerto {exp.get('port', '?')}<br>"
                             f"{exp.get('description', '')}</li>")
             html.append("</ul>")
-        return "
-".join(html)
+        return "\n".join(html)
+
 
     def seccion_mysql(self, dir_path):
         html = ["<h2>Análisis MySQL</h2>"]
@@ -130,8 +130,8 @@ class ReportGenerator:
             for user in data.get("users", []):
                 html.append(f"<li>{user}</li>")
             html.append("</ul></div>")
-        return "
-".join(html)
+        return "\n".join(html)
+
 
     def seccion_smb(self, hashes_path, creds_path, enum_log):
         html = ["<h2>Resultado SMB</h2><div class='box'>"]
@@ -155,8 +155,8 @@ class ReportGenerator:
                 html.append(f.read())
             html.append("</pre></details>")
         html.append("</div>")
-        return "
-".join(html)
+        return "\n".join(html)
+
 
     def seccion_web(self, dir_path):
         html = ["<h2>Análisis Web</h2>"]
@@ -174,8 +174,7 @@ class ReportGenerator:
                     html.append(f.read())
                 html.append("</pre>")
             html.append("</div></details>")
-        return "
-".join(html)
+        return "\n".join(html)
 
     def seccion_ftp(self, path):
         with open(path) as f:
@@ -188,8 +187,8 @@ class ReportGenerator:
                 html.append(f"<li class='ok'>{c['user']}:{c['password']}</li>")
             html.append("</ul>")
         html.append("</div>")
-        return "
-".join(html)
+        return "\n".join(html)
+
 
     def seccion_rdp(self, path):
         with open(path) as f:
@@ -203,8 +202,8 @@ class ReportGenerator:
         else:
             html.append("<p>No se encontraron credenciales válidas.</p>")
         html.append("</div>")
-        return "
-".join(html)
+        return "\n".join(html)
+
 
 if __name__ == "__main__":
     gen = ReportGenerator()
