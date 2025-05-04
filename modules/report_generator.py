@@ -57,13 +57,21 @@ class ReportGenerator:
         if os.path.isdir(web_dir):
             html.append(self.seccion_web(web_dir))
 
-        ftp_path = os.path.join(self.results_dir, "ftp", "ftp_results.json")
-        if self.modulo_existe(ftp_path):
-            html.append(self.seccion_ftp(ftp_path))
+        ftp_dir = os.path.join(self.results_dir, "ftp")
+        for fname in os.listdir(ftp_dir):
+            if "bruteforce" in fname:
+                ftp_path = os.path.join(ftp_dir, fname)
+                if self.modulo_existe(ftp_path):
+                    html.append(self.seccion_ftp(ftp_path))
+                break
 
-        rdp_path = os.path.join(self.results_dir, "rdp", "rdp_results.json")
-        if self.modulo_existe(rdp_path):
-            html.append(self.seccion_rdp(rdp_path))
+        rdp_dir = os.path.join(self.results_dir, "rdp")
+        for fname in os.listdir(rdp_dir):
+            if "bruteforce" in fname:
+                rdp_path = os.path.join(rdp_dir, fname)
+                if self.modulo_existe(rdp_path):
+                    html.append(self.seccion_rdp(rdp_path))
+                break
 
         html.append("</body></html>")
         with open("results/report.html", "w") as f:
