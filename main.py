@@ -1,6 +1,6 @@
 from utils.api import PentestAPI
 from modules.reporting import generate_report
-from modules.report_generator import generar_informe_final
+from modules.report_generator import ReportGenerator
 import os
 
 def main():
@@ -135,7 +135,8 @@ def main():
 
         elif eleccion == len(menu_modulos) - 1:
             print("[*] Generando informe final...")
-            generar_informe_final()
+            report = ReportGenerator()
+            report.generar()
 
         elif eleccion == len(menu_modulos):
             print("[*] Saliendo.")
