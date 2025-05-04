@@ -71,23 +71,23 @@ class ReportGenerator:
         print("[+] Informe generado como results/report.html")
 
         def tabla_resumen_ejecutiva(self):
-        filas = []
-        smb_creds_path = os.path.join(self.results_dir, "smb", "creds.json")
-        if self.modulo_existe(smb_creds_path):
-            with open(smb_creds_path) as f:
-                creds = json.load(f)
-                for c in creds:
-                    filas.append(["192.168.X.X", "SMB", "Credencial crackeada", "Alta", f"{c['usuario']}:{c['password']}"])
+            filas = []
+            smb_creds_path = os.path.join(self.results_dir, "smb", "creds.json")
+            if self.modulo_existe(smb_creds_path):
+                with open(smb_creds_path) as f:
+                    creds = json.load(f)
+                    for c in creds:
+                        filas.append(["192.168.X.X", "SMB", "Credencial crackeada", "Alta", f"{c['usuario']}:{c['password']}"])
 
-        html = ["<h2>Resumen Ejecutivo</h2>", "<table>",
-                "<tr><th>IP</th><th>Servicio</th><th>Tipo</th><th>Severidad</th><th>Credenciales</th></tr>"]
-        for fila in filas:
-            ip, servicio, tipo, sev, cred = fila
-            sev_class = sev.lower()
-            html.append(f"<tr class='{sev_class}'><td>{ip}</td><td>{servicio}</td><td>{tipo}</td><td>{sev}</td><td>{cred}</td></tr>")
-        html.append("</table>")
-        return "
-".join(html)
+            html = ["<h2>Resumen Ejecutivo</h2>", "<table>",
+                    "<tr><th>IP</th><th>Servicio</th><th>Tipo</th><th>Severidad</th><th>Credenciales</th></tr>"]
+            for fila in filas:
+                ip, servicio, tipo, sev, cred = fila
+                sev_class = sev.lower()
+                html.append(f"<tr class='{sev_class}'><td>{ip}</td><td>{servicio}</td><td>{tipo}</td><td>{sev}</td><td>{cred}</td></tr>")
+            html.append("</table>")
+            return "
+    ".join(html)
 
     def seccion_scan(self, path):
         with open(path) as f:
