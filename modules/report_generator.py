@@ -53,25 +53,25 @@ class ReportGenerator:
         if self.modulo_existe(smb_hashes) or self.modulo_existe(smb_creds):
             html.append(self.seccion_smb(smb_hashes, smb_creds, smb_enum))
 
-        web_dir = os.path.join(self.results_dir, "web")
+        web_dir = os.path.join(self.results_dir, "web_enum")
         if os.path.isdir(web_dir):
             html.append(self.seccion_web(web_dir))
 
         ftp_dir = os.path.join(self.results_dir, "ftp")
-        for fname in os.listdir(ftp_dir):
-            if "bruteforce" in fname:
-                ftp_path = os.path.join(ftp_dir, fname)
-                if self.modulo_existe(ftp_path):
-                    html.append(self.seccion_ftp(ftp_path))
-                break
+        if os.path.isdir(ftp_dir):
+            for fname in os.listdir(ftp_dir):
+                if fname.endswith(".json"):
+                    ftp_path = os.path.join(ftp_dir, fname)
+                    if self.modulo_existe(ftp_path):
+                        html.append(self.seccion_ftp(ftp_path))
 
         rdp_dir = os.path.join(self.results_dir, "rdp")
-        for fname in os.listdir(rdp_dir):
-            if "bruteforce" in fname:
-                rdp_path = os.path.join(rdp_dir, fname)
-                if self.modulo_existe(rdp_path):
-                    html.append(self.seccion_rdp(rdp_path))
-                break
+        if os.path.isdir(rdp_dir):
+            for fname in os.listdir(rdp_dir):
+                if fname.endswith(".json"):
+                    rdp_path = os.path.join(rdp_dir, fname)
+                    if self.modulo_existe(rdp_path):
+                        html.append(self.seccion_rdp(rdp_path))
 
         html.append("</body></html>")
         with open("results/report.html", "w") as f:
@@ -112,14 +112,14 @@ class ReportGenerator:
             data = json.load(f)
         html = ["<h2>Exploits detectados</h2>"]
         for ip, exploits in data.items():
-            html.append(f"<h3>{ip}</h3><ul>")
+            html.append(f"<details><summary><strong>{ip}</strong></summary><div class='box'>")
             for exp in exploits:
                 if isinstance(exp, str):
-                    html.append(f"<li>{exp}</li>")
-                elif isinstance(exp, dict):
+                    html.append(f"<pre>{exp}</pre>")
+                else:
                     sev_class = exp.get("severity", "low").lower()
-                    html.append(f"<li class='{sev_class}'><strong>{exp.get('name')}</strong> - Puerto {exp.get('port', '?')}<br>{exp.get('description', '')}</li>")
-            html.append("</ul>")
+                    html.append(f"<p class='{sev_class}'><strong>{exp.get('name')}</strong> - Puerto {exp.get('port', '?')}<br>{exp.get('description', '')}</p>")
+            html.append("</div></details>")
         return "\n".join(html)
 
     def seccion_mysql(self, dir_path):
@@ -186,10 +186,10 @@ class ReportGenerator:
             data = json.load(f)
         html = ["<h2>Resultado FTP</h2><div class='box'>"]
         html.append(f"<strong>Acceso anónimo:</strong> {'Sí' if data.get('anonymous_access') else 'No'}<br>")
-        if 'credentials' in data:
-            html.append("<strong>Credenciales probadas con éxito:</strong><ul>")
-            for c in data['credentials']:
-                html.append(f"<li class='ok'>{c['user']}:{c['password']}</li>")
+        if 'valid_credentials' in data:
+            html.append("<strong>Credenciales encontradas:</strong><ul>")
+            for c in data['valid_credentials']:
+                html.append(f"<li class='ok'>{c['usuario']}:{c['password']}</li>")
             html.append("</ul>")
         html.append("</div>")
         return "\n".join(html)
@@ -198,10 +198,10 @@ class ReportGenerator:
         with open(path) as f:
             data = json.load(f)
         html = ["<h2>Resultado RDP</h2><div class='box'>"]
-        if 'credentials' in data:
+        if 'valid_credentials' in data:
             html.append("<strong>Credenciales encontradas:</strong><ul>")
-            for c in data['credentials']:
-                html.append(f"<li class='ok'>{c['user']}:{c['password']}</li>")
+            for c in data['valid_credentials']:
+                html.append(f"<li class='ok'>{c['usuario']}:{c['password']}</li>")
             html.append("</ul>")
         else:
             html.append("<p>No se encontraron credenciales válidas.</p>")
