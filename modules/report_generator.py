@@ -80,12 +80,40 @@ class ReportGenerator:
 
     def tabla_resumen_ejecutiva(self):
         filas = []
+        # SMB
         smb_creds_path = os.path.join(self.results_dir, "smb", "creds.json")
         if self.modulo_existe(smb_creds_path):
             with open(smb_creds_path) as f:
                 creds = json.load(f)
                 for c in creds:
-                    filas.append(["192.168.X.X", "SMB", "Credencial crackeada", "Alta", f"{c['usuario']}:{c['password']}"])
+                    ip = c.get("host") or "IP no especificada"
+                    filas.append([ip, "SMB", "Credencial crackeada", "Alta", f"{c['usuario']}:{c['password']}"])
+
+        # FTP
+        ftp_dir = os.path.join(self.results_dir, "ftp")
+        for fname in os.listdir(ftp_dir):
+            if fname.endswith(".json"):
+                ftp_path = os.path.join(ftp_dir, fname)
+                if self.modulo_existe(ftp_path):
+                    with open(ftp_path) as f:
+                        data = json.load(f)
+                        ip = data.get("host")
+                        for cred in data.get("valid_credentials", []):
+                            if ip:
+                                filas.append([ip, "FTP", "Credencial válida", "Media", f"{cred['usuario']}:{cred['password']}"])
+
+        # RDP
+        rdp_dir = os.path.join(self.results_dir, "rdp")
+        for fname in os.listdir(rdp_dir):
+            if fname.endswith(".json"):
+                rdp_path = os.path.join(rdp_dir, fname)
+                if self.modulo_existe(rdp_path):
+                    with open(rdp_path) as f:
+                        data = json.load(f)
+                        ip = data.get("host")
+                        for cred in data.get("valid_credentials", []):
+                            if ip:
+                                filas.append([ip, "RDP", "Credencial válida", "Alta", f"{cred['usuario']}:{cred['password']}"])
 
         html = ["<h2>Resumen Ejecutivo</h2>", "<table>",
                 "<tr><th>IP</th><th>Servicio</th><th>Tipo</th><th>Severidad</th><th>Credenciales</th></tr>"]
@@ -95,6 +123,7 @@ class ReportGenerator:
             html.append(f"<tr class='{sev_class}'><td>{ip}</td><td>{servicio}</td><td>{tipo}</td><td>{sev}</td><td>{cred}</td></tr>")
         html.append("</table>")
         return "\n".join(html)
+
 
     def seccion_scan(self, path):
         with open(path) as f:
@@ -108,33 +137,8 @@ class ReportGenerator:
         return "\n".join(html)
 
     def seccion_exploits(self, path):
-        with open(path) as f:
-            data = json.load(f)
         html = ["<h2>Exploits detectados</h2>"]
-        for ip, exploits in data.items():
-            html.append(f"<details><summary><strong>{ip}</strong></summary><div class='box'>")
-            for exp in exploits:
-                if isinstance(exp, str):
-                    html.append(f"<p>{exp}</p>")
-                    continue
-                if not isinstance(exp, dict):
-                    continue
-
-                name = exp.get("name", "Sin nombre")
-                port = exp.get("port", "?")
-                severity = exp.get("severity", "low").lower()
-                description = exp.get("description", "")
-
-                # Unir si description o name vienen como listas de caracteres
-                if isinstance(name, list):
-                    name = "".join(name)
-                if isinstance(description, list):
-                    description = "".join(description)
-
-                html.append(
-                    f"<div class='{severity}'><strong>{name}</strong> (Puerto: {port})<br>{description}</div><br>"
-                )
-            html.append("</div></details>")
+        html.append(f"<p>El análisis de exploits se encuentra en: <code>{path}</code></p>")
         return "\n".join(html)
 
     def seccion_mysql(self, dir_path):
