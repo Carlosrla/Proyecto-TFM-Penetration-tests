@@ -86,7 +86,7 @@ class Reconnaissance:
         if scan_type == "full":
             nmap_command = ["nmap", "-sV", "-p-", "-O", "--open", "--script=banner", "-oX", "-", target]
         elif scan_type == "critical":
-            nmap_command = ["nmap"] + target.split() + ["-sV", "-p", self.CRITICAL_PORTS, "-O", "--open", "--script=banner", "-oX", "-"]
+            nmap_command = ["nmap"] + target.split() + ["-sV", "-sS", "-Pn", "-T4" , "-p", self.CRITICAL_PORTS, "-O", "--open", "--script=banner", "-oX", "-"]
         else:
             print("[-] Tipo de escaneo no válido.")
             return None
