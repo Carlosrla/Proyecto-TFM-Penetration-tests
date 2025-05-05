@@ -66,20 +66,44 @@ def main():
     while True:
         print("\n[*] ¿Qué módulo deseas ejecutar?\n")
         menu_modulos = []
-        if "smb" in modulos_disponibles:
-            menu_modulos.append("1. Ataques SMB (Responder + Crackeo + Enumeración)")
-        if "web" in modulos_disponibles:
-            menu_modulos.append("2. Análisis Web (Fuzzing + Nuclei)")
-        if "rdp" in modulos_disponibles:
-            menu_modulos.append("3. Análisis RDP (BlueKeep, fuerza bruta)")
-        if "ftp" in modulos_disponibles:
-            menu_modulos.append("4. Ataques FTP (Login anónimo, fuerza bruta)")
-        if "mysql" in modulos_disponibles:
-            menu_modulos.append("5. Ataques MySQL (Sin password, fuerza bruta)")
+        opciones_menu = {}
+        idx = 1
 
-        menu_modulos.append(f"{len(menu_modulos)+1}. Ejecutar todo automáticamente")
-        menu_modulos.append(f"{len(menu_modulos)+2}. Generar informe final")
-        menu_modulos.append(f"{len(menu_modulos)+3}. Salir")
+        if "smb" in modulos_disponibles:
+            menu_modulos.append(f"{idx}. Ataques SMB (Responder + Crackeo + Enumeración)")
+            opciones_menu[idx] = "smb"
+            idx += 1
+
+        if "web" in modulos_disponibles:
+            menu_modulos.append(f"{idx}. Análisis Web (Fuzzing + Nuclei)")
+            opciones_menu[idx] = "web"
+            idx += 1
+
+        if "rdp" in modulos_disponibles:
+            menu_modulos.append(f"{idx}. Análisis RDP (BlueKeep, fuerza bruta)")
+            opciones_menu[idx] = "rdp"
+            idx += 1
+
+        if "ftp" in modulos_disponibles:
+            menu_modulos.append(f"{idx}. Ataques FTP (Login anónimo, fuerza bruta)")
+            opciones_menu[idx] = "ftp"
+            idx += 1
+
+        if "mysql" in modulos_disponibles:
+            menu_modulos.append(f"{idx}. Ataques MySQL (Sin password, fuerza bruta)")
+            opciones_menu[idx] = "mysql"
+            idx += 1
+
+        menu_modulos.append(f"{idx}. Ejecutar todo automáticamente")
+        opciones_menu[idx] = "auto"
+        idx += 1
+
+        menu_modulos.append(f"{idx}. Generar informe final")
+        opciones_menu[idx] = "informe"
+        idx += 1
+
+        menu_modulos.append(f"{idx}. Salir")
+        opciones_menu[idx] = "salir"
 
         for opcion in menu_modulos:
             print(opcion)
@@ -93,35 +117,40 @@ def main():
             print("[!] Entrada no válida.")
             continue
 
-        if eleccion == 1 and "smb" in modulos_disponibles:
+        accion = opciones_menu.get(eleccion)
+        if not accion:
+            print("[!] Opción fuera de rango o módulo no disponible.")
+            continue
+
+        if accion == "smb":
             print("[*] Ejecutando Ataques SMB...")
             config = api.load_config()
             interface = config.get("interface", "eth0")
             dictionary = config.get("dictionary", "/usr/share/wordlists/rockyou.txt")
             api.ejecutar_ataque_smb(interface=interface, dictionary_path=dictionary)
 
-        elif eleccion == 2 and "web" in modulos_disponibles:
+        elif accion == "web":
             print("[*] Ejecutando Fuzzing y análisis web...")
             api.ejecutar_analisis_web()
 
-        elif eleccion == 3 and "rdp" in modulos_disponibles:
+        elif accion == "rdp":
             print("[*] Ejecutando análisis de RDP...")
             api.run_rdp_bruteforce()
 
-        elif eleccion == 4 and "ftp" in modulos_disponibles:
+        elif accion == "ftp":
             print("[*] Ejecutando ataques FTP...")
             api.run_ftp_bruteforce()
 
-        elif eleccion == 5 and "mysql" in modulos_disponibles:
+        elif accion == "mysql":
             print("[*] Ejecutando ataques MySQL...")
             api.run_mysql_analysis()
 
-        elif eleccion == len(menu_modulos) - 2:
+        elif accion == "auto":
             print("[*] Ejecutando todos los módulos disponibles...")
+            config = api.load_config()
+            interface = config.get("interface", "eth0")
+            dictionary = config.get("dictionary", "/usr/share/wordlists/rockyou.txt")
             if "smb" in modulos_disponibles:
-                config = api.load_config()
-                interface = config.get("interface", "eth0")
-                dictionary = config.get("dictionary", "/usr/share/wordlists/rockyou.txt")
                 api.ejecutar_ataque_smb(interface=interface, dictionary_path=dictionary)
             if "web" in modulos_disponibles:
                 api.ejecutar_analisis_web()
@@ -131,19 +160,17 @@ def main():
                 api.run_ftp_bruteforce()
             if "mysql" in modulos_disponibles:
                 api.run_mysql_analysis()
-            break  # Salimos tras ejecutar todo
+            break
 
-        elif eleccion == len(menu_modulos) - 1:
+        elif accion == "informe":
             print("[*] Generando informe final...")
             report = ReportGenerator()
             report.generar()
 
-        elif eleccion == len(menu_modulos):
+        elif accion == "salir":
             print("[*] Saliendo.")
             break
 
-        else:
-            print("[!] Opción fuera de rango o módulo no disponible.")
 
 if __name__ == "__main__":
     main()
