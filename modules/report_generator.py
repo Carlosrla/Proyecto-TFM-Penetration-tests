@@ -115,10 +115,25 @@ class ReportGenerator:
             html.append(f"<details><summary><strong>{ip}</strong></summary><div class='box'>")
             for exp in exploits:
                 if isinstance(exp, str):
-                    html.append(f"<pre>{exp}</pre>")
-                else:
-                    sev_class = exp.get("severity", "low").lower()
-                    html.append(f"<p class='{sev_class}'><strong>{exp.get('name')}</strong> - Puerto {exp.get('port', '?')}<br>{exp.get('description', '')}</p>")
+                    html.append(f"<p>{exp}</p>")
+                    continue
+                if not isinstance(exp, dict):
+                    continue
+
+                name = exp.get("name", "Sin nombre")
+                port = exp.get("port", "?")
+                severity = exp.get("severity", "low").lower()
+                description = exp.get("description", "")
+
+                # Unir si description o name vienen como listas de caracteres
+                if isinstance(name, list):
+                    name = "".join(name)
+                if isinstance(description, list):
+                    description = "".join(description)
+
+                html.append(
+                    f"<div class='{severity}'><strong>{name}</strong> (Puerto: {port})<br>{description}</div><br>"
+                )
             html.append("</div></details>")
         return "\n".join(html)
 
