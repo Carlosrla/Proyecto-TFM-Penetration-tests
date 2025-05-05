@@ -21,7 +21,7 @@ class ReportGenerator:
             ".ok { color: #00e676; font-weight: bold; }",
             ".bad { color: #ff5252; font-weight: bold; }",
             ".medium { color: #ffc107; font-weight: bold; }",
-            ".box { background: #1e1e1e; padding: 15px; margin: 10px 0; border-radius: 5px; }",
+            ".box { background: #1e1e1e; padding: 15px; margin: 10px 0; border-radius: 5px; overflow-x: auto; word-wrap: break-word; overflow-wrap: break-word; white-space: pre-wrap; }",
             "table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }",
             "th, td { border: 1px solid #555; padding: 8px; text-align: left; }",
             "th { background-color: #2e7d32; color: white; }",
@@ -81,13 +81,23 @@ class ReportGenerator:
     def tabla_resumen_ejecutiva(self):
         filas = []
         # SMB
+        scan_file = os.path.join(self.results_dir, "scan_results.json")
+        ip_smb = "IP no especificada"
+        if self.modulo_existe(scan_file):
+            with open(scan_file) as f:
+                scan_data = json.load(f)
+                for h in scan_data.get("hosts", []):
+                    for p in h.get("open_ports", []):
+                        if p.get("port") == 445:
+                            ip_smb = h.get("ip")
+                            break
+
         smb_creds_path = os.path.join(self.results_dir, "smb", "creds.json")
         if self.modulo_existe(smb_creds_path):
             with open(smb_creds_path) as f:
                 creds = json.load(f)
                 for c in creds:
-                    ip = c.get("host") or "IP no especificada"
-                    filas.append([ip, "SMB", "Credencial crackeada", "Alta", f"{c['usuario']}:{c['password']}"])
+                    filas.append([ip_smb, "SMB", "Credencial crackeada", "Alta", f"{c['usuario']}:{c['password']}"])
 
         # FTP
         ftp_dir = os.path.join(self.results_dir, "ftp")
