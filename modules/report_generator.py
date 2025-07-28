@@ -1,20 +1,23 @@
-import os
-import json
+import os  # Para trabajar con rutas de archivos y directorios
+import json  # Para cargar y guardar información en formato JSON
 
 class ReportGenerator:
     def __init__(self, results_dir="results"):
+        # Directorio donde se encuentran todos los resultados del pentesting
         self.results_dir = results_dir
 
     def modulo_existe(self, path):
+        # Comprueba si el archivo existe y no está vacío
         return os.path.exists(path) and os.path.getsize(path) > 0
 
     def generar(self):
+        # Lista que contiene las líneas HTML que formarán el informe final
         html = [
             "<html lang='es'><head><meta charset='utf-8'>",
             "<meta name='viewport' content='width=device-width, initial-scale=1.0'>",
             "<title>Informe de Pentest</title>",
             "<link rel='icon' href='https://www.svgrepo.com/show/475695/bug.svg'>",
-            "<style>",
+            "<style>",  # Estilos del informe en CSS
             "body { background-color: #121212; color: #ffffff; font-family: 'Segoe UI', sans-serif; padding: 20px; }",
             "h1, h2, h3 { color: #00e676; }",
             "pre { background: #1e1e1e; padding: 10px; overflow-x: auto; border-left: 4px solid #00e676; }",
@@ -32,9 +35,10 @@ class ReportGenerator:
             "details summary { cursor: pointer; padding: 4px; margin: 5px 0; font-weight: bold; }",
             "</style></head><body>",
             "<h1>Informe Final de Pentesting</h1>",
-            self.tabla_resumen_ejecutiva()
+            self.tabla_resumen_ejecutiva()  # Sección de resumen ejecutivo
         ]
 
+        # Añadir secciones dinámicamente según módulos encontrados
         scan = os.path.join(self.results_dir, "scan_results.json")
         if self.modulo_existe(scan):
             html.append(self.seccion_scan(scan))
@@ -47,16 +51,19 @@ class ReportGenerator:
         if os.path.isdir(mysql_dir):
             html.append(self.seccion_mysql(mysql_dir))
 
+        # Módulo SMB
         smb_hashes = os.path.join(self.results_dir, "smb", "hashes.txt")
         smb_creds = os.path.join(self.results_dir, "smb", "creds.json")
         smb_enum = os.path.join(self.results_dir, "smb", "smb_enum.log")
         if self.modulo_existe(smb_hashes) or self.modulo_existe(smb_creds):
             html.append(self.seccion_smb(smb_hashes, smb_creds, smb_enum))
 
+        # Módulo Web
         web_dir = os.path.join(self.results_dir, "web_enum")
         if os.path.isdir(web_dir):
             html.append(self.seccion_web(web_dir))
 
+        # Módulo FTP
         ftp_dir = os.path.join(self.results_dir, "ftp")
         if os.path.isdir(ftp_dir):
             for fname in os.listdir(ftp_dir):
@@ -65,6 +72,7 @@ class ReportGenerator:
                     if self.modulo_existe(ftp_path):
                         html.append(self.seccion_ftp(ftp_path))
 
+        # Módulo RDP
         rdp_dir = os.path.join(self.results_dir, "rdp")
         if os.path.isdir(rdp_dir):
             for fname in os.listdir(rdp_dir):
@@ -73,14 +81,21 @@ class ReportGenerator:
                     if self.modulo_existe(rdp_path):
                         html.append(self.seccion_rdp(rdp_path))
 
+        # Cierre del HTML
         html.append("</body></html>")
+
+        # Escribe el HTML final en un archivo
         with open("results/report.html", "w") as f:
             f.write("\n".join(html))
         print("[+] Informe generado como results/report.html")
 
     def tabla_resumen_ejecutiva(self):
+        """
+        Genera una tabla resumen de servicios comprometidos con su severidad y credenciales.
+        """
         filas = []
-        # SMB
+
+        # Detectar IP con SMB activo
         scan_file = os.path.join(self.results_dir, "scan_results.json")
         ip_smb = "IP no especificada"
         if self.modulo_existe(scan_file):
@@ -92,6 +107,7 @@ class ReportGenerator:
                             ip_smb = h.get("ip")
                             break
 
+        # Añadir credenciales SMB crackeadas
         smb_creds_path = os.path.join(self.results_dir, "smb", "creds.json")
         if self.modulo_existe(smb_creds_path):
             with open(smb_creds_path) as f:
@@ -99,7 +115,7 @@ class ReportGenerator:
                 for c in creds:
                     filas.append([ip_smb, "SMB", "Credencial crackeada", "Alta", f"{c['usuario']}:{c['password']}"])
 
-        # FTP
+        # Añadir credenciales FTP válidas
         ftp_dir = os.path.join(self.results_dir, "ftp")
         for fname in os.listdir(ftp_dir):
             if fname.endswith(".json"):
@@ -112,7 +128,7 @@ class ReportGenerator:
                             if ip:
                                 filas.append([ip, "FTP", "Credencial válida", "Media", f"{cred['usuario']}:{cred['password']}"])
 
-        # RDP
+        # Añadir credenciales RDP válidas
         rdp_dir = os.path.join(self.results_dir, "rdp")
         for fname in os.listdir(rdp_dir):
             if fname.endswith(".json"):
@@ -125,16 +141,17 @@ class ReportGenerator:
                             if ip:
                                 filas.append([ip, "RDP", "Credencial válida", "Alta", f"{cred['usuario']}:{cred['password']}"])
 
+        # Construcción de tabla HTML
         html = ["<h2>Resumen Ejecutivo</h2>", "<table>",
                 "<tr><th>IP</th><th>Servicio</th><th>Tipo</th><th>Severidad</th><th>Credenciales</th></tr>"]
         for fila in filas:
             ip, servicio, tipo, sev, cred = fila
-            sev_class = sev.lower()
+            sev_class = sev.lower()  # Clase CSS según severidad
             html.append(f"<tr class='{sev_class}'><td>{ip}</td><td>{servicio}</td><td>{tipo}</td><td>{sev}</td><td>{cred}</td></tr>")
         html.append("</table>")
         return "\n".join(html)
 
-
+    # Todas las funciones siguientes agregan secciones por módulo específico
     def seccion_scan(self, path):
         with open(path) as f:
             data = json.load(f)
@@ -237,6 +254,7 @@ class ReportGenerator:
         html.append("</div>")
         return "\n".join(html)
 
+# Punto de entrada para generar el informe si se ejecuta directamente
 if __name__ == "__main__":
     gen = ReportGenerator()
     gen.generar()

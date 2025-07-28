@@ -1,41 +1,39 @@
-from utils.api import PentestAPI
-from modules.reporting import generate_report
-from modules.report_generator import ReportGenerator
-import os
+# Importaciones de módulos internos del framework
+from utils.api import PentestAPI  # Interfaz central de operaciones (escaneo, análisis, ataques)
+from modules.reporting import generate_report  # Función para generar informes parciales tras el escaneo
+from modules.report_generator import ReportGenerator  # Clase para generar el informe final HTML
+import os  # Para operaciones con el sistema de archivos
 
 def main():
-
-    # Inicializar el API
+    # Inicializar la API del framework
     api = PentestAPI()
 
-    # Cargar la configuración      
+    # Cargar configuración desde config.json
     config = api.load_config()
-    target = config.get("ip_range", "192.168.1.0/24")
+    target = config.get("ip_range", "192.168.1.0/24")  # Objetivo por defecto si no se encuentra config
     output_file = "results/scan_results.json"
     exploits_file = "results/exploits.json"
     report_file = "results/report.html"
 
-    # Asegurarse de que el directorio "results" exista
+    # Asegurar existencia del directorio de resultados
     os.makedirs("results", exist_ok=True)
 
-    
-
-    # Fase 1: Reconocimiento
+    # FASE 1: RECONOCIMIENTO
     print("[*] Iniciando fase de reconocimiento...")
     scan_results = api.scan_network(target, output_file, scan_type="critical")
-    
+
     if scan_results:
         print("[+] Resultados del escaneo:")
         for host in scan_results["hosts"]:
             print(f"  - {host['ip']}: {host['open_ports']}")
 
-        # Fase 2: Generación del informe
+        # FASE 2: GENERACIÓN DE INFORME PARCIAL
         print("[*] Generando informe...")
         generate_report(scan_results, exploits_file, report_file)
     else:
         print("[-] No se encontraron hosts o hubo un error en el escaneo.")
 
-    # Después del reconocimiento
+    # FASE 3: ANÁLISIS DE SERVICIOS Y SUGERENCIAS DE MÓDULOS
     recommendations = api.run_service_analysis(output_file)
 
     if recommendations:
@@ -45,7 +43,7 @@ def main():
             for puerto, acciones in puertos.items():
                 print(f"  - Puerto {puerto}: Acciones sugeridas -> {', '.join(acciones)}")
 
-         # Agrupación de servicios por módulo lógico
+        # Determinar qué módulos deben activarse según los servicios detectados
         modulos_disponibles = {}
 
         for ip, puertos in recommendations.items():
@@ -62,7 +60,7 @@ def main():
                     elif accion in ["conexion_sin_password", "fuerza_bruta"] and int(puerto) == 3306:
                         modulos_disponibles["mysql"] = True
 
-    # Menú agrupado por módulo
+    # MENÚ INTERACTIVO DE EJECUCIÓN DE MÓDULOS
     while True:
         print("\n[*] ¿Qué módulo deseas ejecutar?\n")
         menu_modulos = []
@@ -94,14 +92,17 @@ def main():
             opciones_menu[idx] = "mysql"
             idx += 1
 
+        # Opción para ejecutar todos los módulos disponibles automáticamente
         menu_modulos.append(f"{idx}. Ejecutar todo automáticamente")
         opciones_menu[idx] = "auto"
         idx += 1
 
+        # Opción para generar el informe HTML final
         menu_modulos.append(f"{idx}. Generar informe final")
         opciones_menu[idx] = "informe"
         idx += 1
 
+        # Opción para salir del programa
         menu_modulos.append(f"{idx}. Salir")
         opciones_menu[idx] = "salir"
 
@@ -122,6 +123,7 @@ def main():
             print("[!] Opción fuera de rango o módulo no disponible.")
             continue
 
+        # Lógica de ejecución según módulo elegido
         if accion == "smb":
             print("[*] Ejecutando Ataques SMB...")
             config = api.load_config()
@@ -160,7 +162,7 @@ def main():
                 api.run_ftp_bruteforce()
             if "mysql" in modulos_disponibles:
                 api.run_mysql_analysis()
-            break
+            break  # Finaliza el menú después de ejecutar todo
 
         elif accion == "informe":
             print("[*] Generando informe final...")
@@ -171,6 +173,6 @@ def main():
             print("[*] Saliendo.")
             break
 
-
+# Punto de entrada del programa
 if __name__ == "__main__":
     main()
