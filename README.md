@@ -84,4 +84,4 @@ Utiliza este software únicamente en entornos de laboratorio, redes de pruebas o
 Contacto
 ===========================================
 
-Carlos Ramos López  
+Carlos Ramos López  linkedin:linkedin.com/in/carlos-ramos-b28173313
